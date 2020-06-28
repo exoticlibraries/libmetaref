@@ -11,8 +11,8 @@ CESTER_TEST(test_friend_model, _,
     Friend *friend = malloc(sizeof(Friend));
     
     METAREF_SET_FIELD(Friend, friend, "name", "Dr. Dre");
-    METAREF_SAFELY_SET_FIELD(Friend, friend, "picture", "/mnt/images/dre.png");
-    METAREF_SAFELY_SET_FIELD(Friend, friend, "location", "Nigeria");
+    METAREF_SAFELY_SET_STRUCT_FIELD(Friend, friend, "picture", "/mnt/images/dre.png");
+    METAREF_SAFELY_SET_STRUCT_FIELD(Friend, friend, "location", "Nigeria");
     
     FOREACH_FIELDS(Friend, friend, field,
         printf("Field Name: %s, Value: %p ", field.name, field.ptr_address);

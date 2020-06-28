@@ -18,12 +18,66 @@
 extern "C" {
 #endif
 
-#ifndef METAREF_FIELD_STRUCT
-#define METAREF_FIELD_STRUCT
-typedef struct field_struct {
+#ifndef METAREF_STRUCTS_DECLARED
+#define METAREF_STRUCTS_DECLARED
+/**
+
+*/
+typedef struct struct_struct {
     char *name;
-    char *type;
-    void **ptr_address;
+    char *file_name;
+    size_t line_num;
+    char **annotations;
+    Field **fields;
+} Struct;
+
+/**
+    This structure for the Struct field. Each field has a 
+    name, type, ptr_address and annotations. 
+    
+    The name and type is stored as char array (c string), 
+    ptr_address is the pointer to the field location in memory 
+    dereferencing it will return the field as (void*) then it can 
+    be casted to it actrual type to read it value or change it 
+    value. 
+    
+    The example below shows how ho to change the value of an 
+    int field in a struct using the field name:
+    
+    davit_struct.h
+    
+    \code
+    #define __STRUCT_FILE__ "davit_struct.h"
+    #include <exotic/metaref.h>
+    
+    STRUCT(Davit, 
+        FIELD(int, num)
+        FIELD(char *, str)
+    )
+    \endcode
+    
+    \code
+    #include "davit_struct.h"
+    #include <stdlib.h>
+    
+    int main() {
+        Davit *davit = malloc(sizeof(Davit));
+        
+        Struct *the_struct = METAREF_GET_STRUCT(Davit, davit);
+        if (the_struct == NULL) {
+            return 1;
+        }
+        Field *num = METAREF_GET_FIELD(the_struct, "num");
+        METAREF_SET_FIELD_CAST();
+        return 0;
+    }
+    \endcode
+*/
+typedef struct field_struct {
+    char *name;                /**< The identifier of of the field */
+    char *type;                /**< The type of of the field in `char *` */
+    void **ptr_address;        /**< The field location in memory, dereferenced value of ptr_address can be used to set the field value */
+    void **annotations;        /**< The array of annotations for the field. */
 } Field;
 #endif
 
@@ -94,28 +148,47 @@ typedef struct field_struct {
 
 #define METAREF_GET_NAME(struct_name) METAREF_##struct_name
 
-#define METAREF_FIELD_EXISTS(struct_name, obj, meta_name) (METAREF_##struct_name##_get_field(obj, meta_name).name != "")
+#define METAREF_STRUCT_FIELD_EXISTS(struct_name, obj, meta_name) (METAREF_##struct_name##_get_field(obj, meta_name).name != "")
 
-#define METAREF_GET_FIELD(struct_name, obj, name) METAREF_##struct_name##_get_field(obj, name)
+#define METAREF_GET_STRUCT_FIELD(struct_name, obj, name) METAREF_##struct_name##_get_field(obj, name)
+
+#define METAREF_GET_FIELD(struct, name) METAREF_get_field(struct, name)
 
 #define METAREF_GET_FIELDS(struct_name) METAREF_##struct_name##_fields
 
-#define FOREACH_FIELDS(struct_name, obj, field, body) \
+#define FOREACH_STRUCT_FIELD(struct_name, obj, field, body) \
     for(size_t i = 0; METAREF_GET_FIELDS(struct_name)[i] != NULL; ++i) {\
-        Field field = METAREF_GET_FIELD(struct_name, obj, METAREF_GET_FIELDS(struct_name)[i]);    \
+        Field field = METAREF_GET_STRUCT_FIELD(struct_name, obj, METAREF_GET_FIELDS(struct_name)[i]);    \
         body   \
     }          \
 
-#define METAREF_SET_FIELD(struct_name, obj, name, value)\
+#define METAREF_SET_STRUCT_FIELD(struct_name, obj, name, value)\
     *(METAREF_##struct_name##_get_field(obj, name)).ptr_address = value;
 
-#define METAREF_SAFELY_SET_FIELD(struct_name, obj, name, value) \
-    if (METAREF_FIELD_EXISTS(struct_name, obj, name)) { \
+#define METAREF_SAFELY_SET_STRUCT_FIELD(struct_name, obj, name, value) \
+    if (METAREF_STRUCT_FIELD_EXISTS(struct_name, obj, name)) { \
         *(METAREF_##struct_name##_get_field(obj, name)).ptr_address = value; \
     }
 
-#define METAREF_SET_FIELD_CAST(struct_name, obj, name, type, value)\
+#define METAREF_SET_STRUCT_FIELD_CAST(struct_name, obj, name, type, value)\
     *((type*)(METAREF_##struct_name##_get_field(obj, name)).ptr_address) = value;
+
+#define METAREF_SAFELY_SET_STRUCT_FIELD_CAST(field, type, value)\
+    *((type*)field.ptr_address) = value;
+
+#define METAREF_SET_FIELD(field, value)\
+    *field.ptr_address = value;
+
+#define METAREF_SAFELY_SET_FIELD(field, value) \
+    if (field.name != NULL && field.name != "") { \
+        *field.ptr_address = value; \
+    }
+
+#define METAREF_SET_FIELD_CAST(field, type, value)\
+    *((type*)field.ptr_address) = value;
+
+#define METAREF_SAFELY_SET_FIELD_CAST(field, type, value)\
+    *((type*)field.ptr_address) = value;
     
 #endif
 
