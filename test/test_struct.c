@@ -8,7 +8,7 @@
 #endif
 
 CESTER_TEST(test_friend_model, _,
-    Friend *friend = malloc(sizeof(Friend));
+    /*Friend *friend = malloc(sizeof(Friend));
     
     METAREF_SET_FIELD(Friend, friend, "name", "Dr. Dre");
     METAREF_SAFELY_SET_STRUCT_FIELD(Friend, friend, "picture", "/mnt/images/dre.png");
@@ -20,11 +20,11 @@ CESTER_TEST(test_friend_model, _,
         printf("\n");
     )
     
-    free(friend);
+    free(friend);*/
 )
 
 CESTER_TEST(test_date_model, _,
-    Date *date = malloc(sizeof(Date));
+    /*Date *date = malloc(sizeof(Date));
     
     METAREF_SAFELY_SET_FIELD(Date, date, "time", "00:00 PM 00:00");
     METAREF_SAFELY_SET_FIELD(Date, date, "day", "Sunday");
@@ -35,6 +35,6 @@ CESTER_TEST(test_date_model, _,
         printf("\n");
     )
     
-    free(date);
+    free(date);*/
 )
 

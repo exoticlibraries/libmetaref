@@ -21,17 +21,6 @@ extern "C" {
 #ifndef METAREF_STRUCTS_DECLARED
 #define METAREF_STRUCTS_DECLARED
 /**
-
-*/
-typedef struct struct_struct {
-    char *name;
-    char *file_name;
-    size_t line_num;
-    char **annotations;
-    Field **fields;
-} Struct;
-
-/**
     This structure for the Struct field. Each field has a 
     name, type, ptr_address and annotations. 
     
@@ -79,6 +68,17 @@ typedef struct field_struct {
     void **ptr_address;        /**< The field location in memory, dereferenced value of ptr_address can be used to set the field value */
     void **annotations;        /**< The array of annotations for the field. */
 } Field;
+
+/**
+    
+*/
+typedef struct struct_struct {
+    char *name;
+    char *file_name;
+    size_t line_num;
+    char **annotations;
+    Field **fields;
+} Struct;
 #endif
 
 // first exapnsion
@@ -91,10 +91,28 @@ typedef struct field_struct {
     #undef ANNOTATION
 #endif
 
+/**
+    Generate the structure on first macro expansion. 
+    The Struct value is created, the function is also 
+    implemented in a way such that the value is only 
+    set once throughout the program lifetime.
+*/
 #define STRUCT(struct_name, ...) \
     typedef struct METAREF_##struct_name { \
         __VA_ARGS__ \
-    } struct_name;
+    } struct_name;\
+    \
+    Struct *METAREF_##struct_name##_Struct; \
+    Struct *METAREF_##struct_name##_Struct_init() { \
+        if (METAREF_##struct_name##_Struct == NULL) {\
+            METAREF_##struct_name##_Struct = malloc(sizeof(Struct));\
+            METAREF_##struct_name##_Struct->name = #struct_name;\
+            METAREF_##struct_name##_Struct->file_name = __FILE__;\
+            METAREF_##struct_name##_Struct->line_num = __LINE__;\
+        }\
+        return METAREF_##struct_name##_Struct;\
+    }
+    
     
 #define FIELD(type_v, identifier) \
     type_v identifier;
@@ -109,7 +127,8 @@ typedef struct field_struct {
     static char *METAREF_##struct_name##_fields[] = { \
         __VA_ARGS__ \
         NULL  \
-    };
+    };\
+    
     
 #define FIELD(type_v, identifier) \
     #identifier,
