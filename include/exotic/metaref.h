@@ -10,6 +10,20 @@
 #ifdef __STRUCT_FILE__
 #define EXOTIC_METAREF_STRUCT
 
+#ifndef __cplusplus
+#ifndef __STDC_VERSION__
+    #error This library is not supported in C version less than C99.
+    #include <metaref_not_supported_in_standard_less_than_C99>
+#endif
+#endif
+
+#ifdef __cplusplus
+#if __cplusplus <= 199711L
+    #error This library is not supported in C++ version less than C++11.
+    #include <metaref_not_supported_in_standard_less_than_C++11>
+#endif
+#endif
+
 #ifdef METAREF_PREPROCESSING_DONE
 #undef METAREF_PREPROCESSING_DONE
 #endif
@@ -20,6 +34,13 @@ extern "C" {
 
 #ifndef METAREF_STRUCTS_DECLARED
 #define METAREF_STRUCTS_DECLARED
+/**
+
+**/
+typedef struct annotation_struct_ {
+    char **params;
+} Annotation;
+
 /**
     This structure for the Struct field. Each field has a 
     name, type, ptr_address and annotations. 
@@ -62,21 +83,21 @@ extern "C" {
     }
     \endcode
 */
-typedef struct field_struct {
-    char *name;                /**< The identifier of of the field */
-    char *type;                /**< The type of of the field in `char *` */
+typedef struct field_struct_ {
+    const char *name;                /**< The identifier of of the field */
+    const char *type;                /**< The type of of the field in `char *` */
     void **ptr_address;        /**< The field location in memory, dereferenced value of ptr_address can be used to set the field value */
-    void **annotations;        /**< The array of annotations for the field. */
+    Annotation **annotations;        /**< The array of annotations for the field. */
 } Field;
 
 /**
     
 */
-typedef struct struct_struct {
-    char *name;
-    char *file_name;
+typedef struct struct_struct_ {
+    const char *name;
+    const char *file_name;
     size_t line_num;
-    char **annotations;
+    Annotation **annotations;
     Field **fields;
 } Struct;
 #endif
@@ -105,7 +126,7 @@ typedef struct struct_struct {
     Struct *METAREF_##struct_name##_Struct; \
     Struct *METAREF_##struct_name##_Struct_init() { \
         if (METAREF_##struct_name##_Struct == NULL) {\
-            METAREF_##struct_name##_Struct = malloc(sizeof(Struct));\
+            METAREF_##struct_name##_Struct = (Struct *) malloc(sizeof(Struct));\
             METAREF_##struct_name##_Struct->name = #struct_name;\
             METAREF_##struct_name##_Struct->file_name = __FILE__;\
             METAREF_##struct_name##_Struct->line_num = __LINE__;\
@@ -124,7 +145,7 @@ typedef struct struct_struct {
 #undef FIELD
 
 #define STRUCT(struct_name, ...) \
-    static char *METAREF_##struct_name##_fields[] = { \
+    static const char *METAREF_##struct_name##_fields[] = { \
         __VA_ARGS__ \
         NULL  \
     };\
@@ -154,7 +175,7 @@ typedef struct struct_struct {
     
 #define FIELD(type_v, identifier) \
         if (name == #identifier) { \
-            field.ptr_address = (void*)&the_meta_struct->identifier; \
+            field.ptr_address = (void**)&the_meta_struct->identifier; \
             field.name = name; \
             field.type = #type_v; \
         }
@@ -163,9 +184,59 @@ typedef struct struct_struct {
 #define METAREF_HELPER_MACROS 
 // inspection helper macros
 
+/**
+    Concatenate two objects
+*/
 #define METAREF_CONCAT(x, y) x y
 
+/**
+    Build the name of any value for Metaref by 
+    appending `METAREF_` before the value
+*/
 #define METAREF_GET_NAME(struct_name) METAREF_##struct_name
+
+/**
+    Initialize the `Struct *` object of the struct, calling 
+    this more than once will only return the same value as 
+    the object holds the structure and not value of the 
+    struct. 
+    
+    This is equivalent to calling the method directly 
+    \code
+    STRUCT(Location,
+        FIELD(long, longitude)
+        FIELD(long, latitude)
+    )
+    \endcode
+    
+    \code
+    Struct my_struct = METAREF_Location_Struct_init();
+    \endcode
+    
+    After using the object in the a code block it should be 
+    freed to avoid dangling in memory. Free the object with 
+    the macro `METAREF_FREE_STRUCT`.
+*/
+#define METAREF_GET_STRUCT(struct_name)\
+    METAREF_##struct_name##_Struct_init();
+    
+/**
+    Destroy the `Struct *` object that is initialized 
+    using the `METAREF_GET_STRUCT` macro. To get the struct 
+    again use the METAREF_GET_STRUCT macro.
+    
+    Beyound this point try to use the object **WILL** result 
+    in undefined behaviours.
+*/
+#define METAREF_FREE_STRUCT(struct_name)\
+    if (METAREF_##struct_name##_Struct != NULL) {\
+        free(METAREF_##struct_name##_Struct);\
+        METAREF_##struct_name##_Struct = NULL;\
+    }
+
+
+// ========================
+
 
 #define METAREF_STRUCT_FIELD_EXISTS(struct_name, obj, meta_name) (METAREF_##struct_name##_get_field(obj, meta_name).name != "")
 
