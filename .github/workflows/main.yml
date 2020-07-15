@@ -35,7 +35,7 @@ jobs:
             test/
           compiler-options-for-tests: |
             -I.
-            -I./structs
-            -I../include/
+            -I./test/structs
+            -I./include/
             
         
