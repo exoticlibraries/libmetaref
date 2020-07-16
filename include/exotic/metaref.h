@@ -110,6 +110,7 @@ typedef struct struct_struct_ {
     #undef FIELD
     #undef ANNOTATED_FIELD
     #undef ANNOTATION
+    #undef _A
 #endif
 
 /**
@@ -134,9 +135,16 @@ typedef struct struct_struct_ {
         return METAREF_##struct_name##_Struct;\
     }
     
-    
+/**
+
+*/
 #define FIELD(type_v, identifier) \
     type_v identifier;
+    
+/**
+
+*/
+#define 
 
 // second exapnsion
 #include __STRUCT_FILE__
