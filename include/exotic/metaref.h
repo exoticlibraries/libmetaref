@@ -6,8 +6,20 @@
     \file metaref.h
 */
 
+/**
+    The counter that manages the index 
+    of a struct in the annotation array.
+*/
+#ifndef __COUNTER__
+    #error This library is not supported with this compiler. Use any compiler with __COUNTER__ macro declared
+    #include <metaref_not_supported_with_no___COUNTER__>
+#endif
+
 #ifndef EXOTIC_METAREF_STRUCT
 #ifdef __STRUCT_FILE__
+#ifndef __STRUCT_NAME__
+    #error You need to declare the struct name value before including metaref.h
+#endif
 #define EXOTIC_METAREF_STRUCT
 
 #ifndef __cplusplus
@@ -34,11 +46,39 @@ extern "C" {
 
 #ifndef METAREF_STRUCTS_DECLARED
 #define METAREF_STRUCTS_DECLARED
-/**
 
+/**
+    Concatenate two objects implicitly
+*/
+#define METAREF_CONCAT_IMPL(x,y ) x##y
+
+/**
+    Concatenate two objects
+*/
+#define METAREF_CONCAT(x,y) METAREF_CONCAT_IMPL(x,y)
+
+/**
+    The function pointer for the annotation with a 
+    function value instead of string. The function 
+    accept a void* parameter and returns void*.
+*/
+typedef void *(*func_ptr_)(void *);
+
+typedef enum metaref_annoptation_type_ {
+    METAREF_ANNOTATION_STRING,
+    METAREF_ANNOTATION_FUNCTION,
+    METAREF_ANNOTATION_TERMINATOR
+} AnnotationType;
+
+/**
+    
 **/
 typedef struct annotation_struct_ {
-    char **params;
+    const size_t line_num;
+    const AnnotationType type;
+    const char *name;
+    const void *str_value;
+    func_ptr_ func_ptr;
 } Annotation;
 
 /**
@@ -87,7 +127,6 @@ typedef struct field_struct_ {
     const char *name;                /**< The identifier of of the field */
     const char *type;                /**< The type of of the field in `char *` */
     void **ptr_address;        /**< The field location in memory, dereferenced value of ptr_address can be used to set the field value */
-    Annotation **annotations;        /**< The array of annotations for the field. */
 } Field;
 
 /**
@@ -97,20 +136,20 @@ typedef struct struct_struct_ {
     const char *name;
     const char *file_name;
     size_t line_num;
-    Annotation **annotations;
-    Field **fields;
 } Struct;
 #endif
 
-// first exapnsion
+/* FIRST EXAPNSION
+  -------------------
 
-/* Undef the macros for another reimport */
+  Declare the struct meta fields for 
+  introspection.
+*/
 #ifdef STRUCT
     #undef STRUCT
     #undef FIELD
-    #undef ANNOTATED_FIELD
-    #undef ANNOTATION
-    #undef _A
+    #undef _S
+    #undef _F
 #endif
 
 /**
@@ -134,26 +173,129 @@ typedef struct struct_struct_ {
         }\
         return METAREF_##struct_name##_Struct;\
     }
-    
+   
 /**
 
-*/
+*/   
 #define FIELD(type_v, identifier) \
     type_v identifier;
     
 /**
+    Create a string value annotation for 
+    a struct. 
+    
+    Example:
+    
+    \code
+    _S(DATABASE_table, "user")
+    STRUCT(User,
+        FIELD(char *, name)
+    )
+    \endcode
+    
+    \param annotation_name the name of the annotation
+    \param annotation_value the string value of the annotation
+*/   
+#define _S(annotation_name, annotation_value)
+    
+/**
+    Create a function value annotation for 
+    a struct. 
+    
+    Example:
+    
+    \code
+    _F(TO_STRING, user_to_string)
+    STRUCT(User,
+        FIELD(char *, name)
+    )
+    
+    #ifndef _DCLR
+    #define _DCLR
+    void *user_to_string(User *user) {
+        return "Name=libmetaref";
+    }
+    #endif
+    \endcode
+    
+    \param annotation_name the name of the annotation
+    \param annotation_value the string value of the annotation
+*/   
+#define _F(annotation_name, annotation_value)
 
-*/
-#define 
-
-// second exapnsion
 #include __STRUCT_FILE__
+
+/* SECOND EXAPNSION
+  -------------------
+
+  Store the annotations for the struct 
+  in a static const array.
+*/
 
 #undef STRUCT
 #undef FIELD
+#undef _S
+#undef _F
+
+#define STRUCT(struct_name, ...)     
+
+#define FIELD(type_v, identifier)
+
+#define _S(annotation_name, annotation_value)\
+        {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, NULL},
+
+#define _F(annotation_name, annotation_value)\
+        {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, annotation_value},
+        
+const static Annotation METAREF_CONCAT(METAREF_, METAREF_CONCAT(__STRUCT_NAME__, _annotations))[] = {
+#include __STRUCT_FILE__
+{0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, NULL}
+};
+
+/* THIRD EXAPNSION
+  -------------------
+
+  Store the name of each fields in the 
+  struct in a static array for introspection.
+*/
+#undef STRUCT
+#undef FIELD
+#undef _S
+#undef _F
 
 #define STRUCT(struct_name, ...) \
-    static const char *METAREF_##struct_name##_fields[] = { \
+    Annotation METAREF_##struct_name##_get_annotation(const char *name) {\
+        for(size_t i = 0; METAREF_##struct_name##_annotations[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
+            if (METAREF_##struct_name##_annotations[i].name == name) {\
+                return METAREF_##struct_name##_annotations[i];\
+            }\
+        }\
+        Annotation METAREF_sub_fields__ = {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, NULL};\
+        return METAREF_sub_fields__;\
+    }\
+    
+#define FIELD(type_v, identifier)
+
+#define _S(annotation_name, annotation_value)
+
+#define _F(annotation_name, annotation_value)
+
+#include __STRUCT_FILE__
+
+/* FOURTH EXAPNSION
+  -------------------
+
+  Store the name of each fields in the 
+  struct in a static array for introspection.
+*/
+
+#undef STRUCT
+#undef FIELD
+#undef _S
+#undef _F
+
+#define STRUCT(struct_name, ...) \
+    const static char *METAREF_##struct_name##_fields[] = { \
         __VA_ARGS__ \
         NULL  \
     };\
@@ -162,17 +304,29 @@ typedef struct struct_struct_ {
 #define FIELD(type_v, identifier) \
     #identifier,
 
-// third exapnsion
+#define _S(annotation_name, annotation_value)
+
+#define _F(annotation_name, annotation_value)
+
 #ifdef __STRUCT_FILE__
 #include __STRUCT_FILE__
 #undef __STRUCT_FILE__
+#undef __STRUCT_NAME__
 #endif
 
+/* FINAL EXAPNSION
+  -------------------
+
+  Store the name of each fields in the 
+  struct in a static array for introspection.
+*/
 #undef STRUCT
 #undef FIELD
+#undef _S
+#undef _F
 
 #define STRUCT(struct_name, ...) \
-    Field METAREF_##struct_name##_get_field(struct_name *the_meta_struct, char *name) \
+    Field METAREF_##struct_name##_get_field(const struct_name *the_meta_struct, const char *name) \
     {  \
         Field field;\
         field.name = ""; \
@@ -187,15 +341,15 @@ typedef struct struct_struct_ {
             field.name = name; \
             field.type = #type_v; \
         }
+
+#define _S(annotation_name, annotation_value)
+
+#define _F(annotation_name, annotation_value)
  
 #ifndef METAREF_HELPER_MACROS
 #define METAREF_HELPER_MACROS 
-// inspection helper macros
 
-/**
-    Concatenate two objects
-*/
-#define METAREF_CONCAT(x, y) x y
+/* inspection helper macros */
 
 /**
     Build the name of any value for Metaref by 
@@ -240,6 +394,83 @@ typedef struct struct_struct_ {
     if (METAREF_##struct_name##_Struct != NULL) {\
         free(METAREF_##struct_name##_Struct);\
         METAREF_##struct_name##_Struct = NULL;\
+    }
+    
+/**
+    Get a struct annotation using the annotation name
+
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_GET_ANNOTATION(struct_name, annotation_name)\
+    METAREF_##struct_name##_get_annotation(annotation_name)
+    
+/**
+    Check if the struct contains an annotation
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_HAS_ANNOTATION(struct_name, annotation_name)\
+    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type != METAREF_ANNOTATION_TERMINATOR)
+    
+/**
+    Check if the struct annotation type is string. 
+    That is the annotation is declared using the macro 
+    **_S(x,y)**
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_ANNOTATION_IS_STRING(struct_name, annotation_name)\
+    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_STRING)
+    
+/**
+    Get the string value of annotation declared with 
+    the macro **_S(x,y)**
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_ANNOTATION_STR_VALUE(struct_name, annotation_name)\
+    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_STRING ? \
+    STRUCT_GET_ANNOTATION(struct_name, annotation_name).str_value\
+    : NULL)
+    
+/**
+    Check if the struct annotation type is function. 
+    That is the annotation is declared using the macro 
+    **_F(x,y)**
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_ANNOTATION_IS_FUNCTION(struct_name, annotation_name)\
+    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_FUNCTION)
+    
+/**
+    Get the string value of annotation declared with 
+    the macro **_F(x,y)**
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_ANNOTATION_FUNC_VALUE(struct_name, annotation_name)\
+    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_FUNCTION ? \
+    STRUCT_GET_ANNOTATION(struct_name, annotation_name).func_ptr\
+    : NULL)
+    
+/**
+    Iterate through all the struct annotation
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation the annotation object (string)
+    \param body the for loop body
+*/
+#define FOREACH_STRUCT_ANNOTATION(struct_name, annotation, body)\
+    for(size_t i = 0; METAREF_##struct_name##_annotations[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
+        Annotation annotation = METAREF_##struct_name##_annotations[i];    \
+        body   \
     }
 
 

@@ -1,20 +1,9 @@
 
 #define __STRUCT_FILE__ "date_struct.h"
+#define __STRUCT_NAME__ Date
 #include <exotic/metaref.h>
 
-STRUCT(XSON,
-    FIELD(char*, serializer)
-    FIELD(char*, deserializer)
-)
-
-
 STRUCT(Date,
-    _A(XSON,
-        F(serializer, "string_to_date"), 
-        F(deserializer, "date_to_string")
-    )
-
     FIELD(char *, time)
     FIELD(char *, day)
 )
-
