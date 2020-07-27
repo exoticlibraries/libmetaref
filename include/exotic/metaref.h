@@ -62,7 +62,7 @@ extern "C" {
     function value instead of string. The function 
     accept a void* parameter and returns void*.
 */
-typedef void *(*func_ptr_)(void *);
+typedef void *(*func_ptr_)(const void *);
 
 typedef enum metaref_annoptation_type_ {
     METAREF_ANNOTATION_STRING,
@@ -77,7 +77,7 @@ typedef struct annotation_struct_ {
     const size_t line_num;
     const AnnotationType type;
     const char *name;
-    const void *str_value;
+    const char *str_value;
     func_ptr_ func_ptr;
 } Annotation;
 
@@ -124,8 +124,9 @@ typedef struct annotation_struct_ {
     \endcode
 */
 typedef struct field_struct_ {
-    const char *name;                /**< The identifier of of the field */
+    const size_t line_num;
     const char *type;                /**< The type of of the field in `char *` */
+    const char *name;                /**< The identifier of of the field */
     void **ptr_address;        /**< The field location in memory, dereferenced value of ptr_address can be used to set the field value */
 } Field;
 
@@ -246,13 +247,47 @@ typedef struct struct_struct_ {
 
 #define _F(annotation_name, annotation_value)\
         {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, annotation_value},
-        
+     
+#ifdef __cplusplus
+}
+#endif     
 const static Annotation METAREF_CONCAT(METAREF_, METAREF_CONCAT(__STRUCT_NAME__, _annotations))[] = {
 #include __STRUCT_FILE__
 {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, NULL}
 };
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* THIRD EXAPNSION
+  -------------------
+
+  Store the name of each fields in the 
+  struct in a static array for introspection.
+*/
+
+#undef STRUCT
+#undef FIELD
+#undef _S
+#undef _F
+
+#define STRUCT(struct_name, ...) \
+    const static Field METAREF_##struct_name##_fields[] = { \
+        __VA_ARGS__ \
+        {0, NULL, NULL, NULL},  \
+    };\
+    
+    
+#define FIELD(type_v, identifier) \
+    {__LINE__, #type_v, #identifier, NULL},
+
+#define _S(annotation_name, annotation_value)
+
+#define _F(annotation_name, annotation_value)
+
+#include __STRUCT_FILE__
+
+/* FOURTH EXAPNSION
   -------------------
 
   Store the name of each fields in the 
@@ -273,36 +308,17 @@ const static Annotation METAREF_CONCAT(METAREF_, METAREF_CONCAT(__STRUCT_NAME__,
         Annotation METAREF_sub_fields__ = {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, NULL};\
         return METAREF_sub_fields__;\
     }\
+    Field METAREF_##struct_name##_get_field_name(const char *name) {\
+        for(size_t i = 0; METAREF_##struct_name##_fields[i].type != NULL; ++i) {\
+            if (METAREF_##struct_name##_fields[i].name == name) {\
+                return METAREF_##struct_name##_fields[i];\
+            }\
+        }\
+        Field METAREF_sub_fields1__ = {0, NULL, NULL, NULL};\
+        return METAREF_sub_fields1__;\
+    }\
     
 #define FIELD(type_v, identifier)
-
-#define _S(annotation_name, annotation_value)
-
-#define _F(annotation_name, annotation_value)
-
-#include __STRUCT_FILE__
-
-/* FOURTH EXAPNSION
-  -------------------
-
-  Store the name of each fields in the 
-  struct in a static array for introspection.
-*/
-
-#undef STRUCT
-#undef FIELD
-#undef _S
-#undef _F
-
-#define STRUCT(struct_name, ...) \
-    const static char *METAREF_##struct_name##_fields[] = { \
-        __VA_ARGS__ \
-        NULL  \
-    };\
-    
-    
-#define FIELD(type_v, identifier) \
-    #identifier,
 
 #define _S(annotation_name, annotation_value)
 
@@ -326,14 +342,14 @@ const static Annotation METAREF_CONCAT(METAREF_, METAREF_CONCAT(__STRUCT_NAME__,
 #undef _F
 
 #define STRUCT(struct_name, ...) \
-    Field METAREF_##struct_name##_get_field(const struct_name *the_meta_struct, const char *name) \
-    {  \
-        Field field;\
-        field.name = ""; \
-        field.type = "void"; \
-        __VA_ARGS__ \
-        return field; \
-    }
+    // Field METAREF_##struct_name##_get_field(const struct_name *the_meta_struct, const char *name) \
+    // {  \
+        // Field field;\
+        // field.name = ""; \
+        // field.type = "void"; \
+        // __VA_ARGS__ \
+        // return field; \
+    // }
     
 #define FIELD(type_v, identifier) \
         if (name == #identifier) { \
@@ -435,7 +451,7 @@ const static Annotation METAREF_CONCAT(METAREF_, METAREF_CONCAT(__STRUCT_NAME__,
 #define STRUCT_ANNOTATION_STR_VALUE(struct_name, annotation_name)\
     (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_STRING ? \
     STRUCT_GET_ANNOTATION(struct_name, annotation_name).str_value\
-    : NULL)
+    : "")
     
 /**
     Check if the struct annotation type is function. 
@@ -472,24 +488,379 @@ const static Annotation METAREF_CONCAT(METAREF_, METAREF_CONCAT(__STRUCT_NAME__,
         Annotation annotation = METAREF_##struct_name##_annotations[i];    \
         body   \
     }
+    
+/**
+    Get the field object using the field identifier.
+    
+    \param struct_name the struct name (not variable name)
+    \param field_name the identifier of a field
+*/
+#define METAREF_GET_FIELD(struct_name, field_name)\
+    METAREF_##struct_name##_get_field_name(field_name)
+    
+/**
+    Check if the struct contains a field
+    
+    \param struct_name the struct name (not variable name)
+    \param field_name the identifier of a field
+*/
+#define METAREF_HAS_FIELD(struct_name, field_name)\
+    (METAREF_GET_FIELD(struct_name, field_name).type != NULL)
+    
+/**
+    Iterate through all the struct fields
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    \param body the for loop body
+*/
+#define FOREACH_STRUCT_FIELD(struct_name, field, body)\
+    for(size_t i = 0; METAREF_##struct_name##_fields[i].type != NULL; ++i) {\
+        Field field = METAREF_##struct_name##_fields[i];    \
+        body   \
+    }
+    
+/**
+    Check whether a field is string. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - char *
+    - char*
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is char *
+*/
+#define METAREF_FIELD_IS_CHAR_ARRAY(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "char *" || \
+    METAREF_GET_FIELD(struct_name, field_name).type == "char*") == 1)
+    
+/**
+    Check whether a field is char. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - char
+    - signed char
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is signed
+*/
+#define METAREF_FIELD_IS_CHAR(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "char" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "signed char") == 1)
+    
+/**
+    Check whether a field is unsigned char. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - unsigned char
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is char
+*/
+#define METAREF_FIELD_IS_UCHAR(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "unsigned char") == 1)
+    
+/**
+    Check whether a field is int. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - int
+    - signed
+    - signed int
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is int
+*/
+#define METAREF_FIELD_IS_INT(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "int" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "signed" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "signed int") == 1)
+    
+/**
+    Check whether a field is unsigned int. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - unsigned int
+    - unsigned
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is unsigned int
+*/
+#define METAREF_FIELD_IS_UINT(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "unsigned" || \
+     (METAREF_GET_FIELD(struct_name, field_name).type == "unsigned int")) == 1)
+    
+/**
+    Check whether a field is short. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - short
+    - short int
+    - signed short
+    - signed short int
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is short
+*/
+#define METAREF_FIELD_IS_SHORT(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "short" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "short int" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "signed short" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "signed short int") == 1)
+    
+/**
+    Check whether a field is unsigned short. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - unsigned short
+    - unsigned short int
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is unsigned short
+*/
+#define METAREF_FIELD_IS_USHORT(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "unsigned short" || \
+     (METAREF_GET_FIELD(struct_name, field_name).type == "unsigned short int")) == 1)
+    
+/**
+    Check whether a field is long. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - long
+    - short int
+    - signed long
+    - signed long int
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is long
+*/
+#define METAREF_FIELD_IS_LONG(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "long" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "long int" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "signed long" || \
+      METAREF_GET_FIELD(struct_name, field_name).type == "signed long int") == 1)
+    
+/**
+    Check whether a field is unsigned long. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - unsigned long
+    - unsigned long int
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is unsigned long
+*/
+#define METAREF_FIELD_IS_ULONG(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "unsigned long" || \
+     (METAREF_GET_FIELD(struct_name, field_name).type == "unsigned long int")) == 1)
+    
+/**
+    Check whether a field is float. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - float
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is float
+*/
+#define METAREF_FIELD_IS_FLOAT(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "float") == 1)
+    
+/**
+    Check whether a field is double. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - double
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is double
+*/
+#define METAREF_FIELD_IS_DOUBLE(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "double") == 1)
+    
+/**
+    Check whether a field is long double. 
+    
+    This macro is non efficient at all in determining 
+    the type of the field, it simply compare the field 
+    type used in declaration which might cause failure 
+    if the field is declared with it type in a format 
+    not taken care of. 
+    
+    This macro simply compare a field type with the 
+    following values 
+    
+    - long double
+    
+    You should possibly make your own rule on how fields 
+    should be declared and check for possible matching 
+    types.
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field variable to use in the loop
+    
+    \return true if the field is long doubel
+*/
+#define METAREF_FIELD_IS_LONG_DOUBLE(struct_name, field_name)\
+    ((METAREF_GET_FIELD(struct_name, field_name).type == "long double") == 1)
 
 
 // ========================
 
-
-#define METAREF_STRUCT_FIELD_EXISTS(struct_name, obj, meta_name) (METAREF_##struct_name##_get_field(obj, meta_name).name != "")
-
-#define METAREF_GET_STRUCT_FIELD(struct_name, obj, name) METAREF_##struct_name##_get_field(obj, name)
-
-#define METAREF_GET_FIELD(struct, name) METAREF_get_field(struct, name)
-
-#define METAREF_GET_FIELDS(struct_name) METAREF_##struct_name##_fields
-
-#define FOREACH_STRUCT_FIELD(struct_name, obj, field, body) \
-    for(size_t i = 0; METAREF_GET_FIELDS(struct_name)[i] != NULL; ++i) {\
-        Field field = METAREF_GET_STRUCT_FIELD(struct_name, obj, METAREF_GET_FIELDS(struct_name)[i]);    \
-        body   \
-    }          \
 
 #define METAREF_SET_STRUCT_FIELD(struct_name, obj, name, value)\
     *(METAREF_##struct_name##_get_field(obj, name)).ptr_address = value;

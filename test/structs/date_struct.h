@@ -5,5 +5,5 @@
 
 STRUCT(Date,
     FIELD(char *, time)
-    FIELD(char *, day)
+    FIELD(int, day)
 )

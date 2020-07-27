@@ -25,7 +25,7 @@ CESTER_TEST(check_struct_function_annotation, _,
     cester_assert_ptr_not_equal((void*)STRUCT_GET_ANNOTATION(User, "TO_STRING").name, NULL);
     cester_assert_false(STRUCT_ANNOTATION_IS_STRING(User, "TO_STRING"));
     cester_assert_true(STRUCT_ANNOTATION_IS_FUNCTION(User, "TO_STRING"));
-    char *user_str = STRUCT_ANNOTATION_FUNC_VALUE(User, "TO_STRING")(NULL);
+    char *user_str = (char *) STRUCT_ANNOTATION_FUNC_VALUE(User, "TO_STRING")(NULL);
     cester_assert_str_not_equal(user_str, "user");
 )
 
