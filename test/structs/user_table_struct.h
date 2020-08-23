@@ -4,6 +4,7 @@
     
 _S(DATABASE_table, "user")
 _S(KONFIGER_file, "#{rsc}/user.conf")
+_I(SIZE_max, 2000)
 _F(TO_STRING, user_to_string)
 STRUCT(User,
     FIELD(long, user_id)

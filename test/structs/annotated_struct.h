@@ -2,19 +2,16 @@
 #define __STRUCT_FILE__ "annotated_struct.h"
 #include <exotic/metaref.h>
 
-ANNOTATIONS(
-    TABLE("date")
-)
 STRUCT(Date,
     FIELD(char *, time)
     FIELD(char *, day)
     ANNOTATED_FIELD(
-        ANNOTATIONS(
-            COLUMN("project"),
-            JSON_VALUE("Project"),
-            KONFIGER_VALUE("project"),
-            SIZE(10, 50, "The length must be between 10 and 50"),
-        ),
+        _S(DATABASE_column, "project")
+        _S(JSON_value, "project_data")
+        _S(KONFIGER_value, "project")
+        _I(SIZE_min, 10)
+        _I(SIZE_max, 50")
+        _S(SIZE_msg, "The length must be between 10 and 50")
         FIELD(char *, project)
     )
 )
@@ -22,5 +19,5 @@ STRUCT(Date,
 COLUMN(value) { "COLUMN", value }
 SIZE(min, max, message) { "SIZE", min, max, message }
 
-FIELD_HAS_ANNOTATION(KONFIGER_VALUE)
-GET_ANNOTATION_VALUE(KONFIGER_VALUE)
+FIELD_HAS_ANNOTATION(Date, "project", KONFIGER_VALUE)
+GET_ANNOTATION_VALUE(Date, "project", KONFIGER_VALUE)
