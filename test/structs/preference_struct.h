@@ -3,11 +3,10 @@
 #include <exotic/metaref.h>
     
 STRUCT(Preference,
-    /*ANNOTATED_FIELD(
-        _S(KONFIGER_value, "IpAddress")
-        FIELD(char *, ip_address)
-    )*/
-    FIELD(int, MainPort)
+    FIELD({
+        _FS(KONFIGER_value, "IpAddress")
+    }, char *, ip_address)
+    FIELD({}, int, MainPort)
     /*ANNOTATED_FIELD(
         _S(DATABASE_column, "project")
         _S(JSON_value, "project_data")

@@ -7,10 +7,10 @@ _S(KONFIGER_file, "#{rsc}/user.conf")
 _I(SIZE_max, 2000)
 _F(TO_STRING, user_to_string)
 STRUCT(User,
-    FIELD(long, user_id)
-    FIELD(char *, first_name)
-    FIELD(char *, middle_name)
-    FIELD(char *, last_name)
+    FIELD({}, long, user_id)
+    FIELD({}, char *, first_name)
+    FIELD({}, char *, middle_name)
+    FIELD({}, char *, last_name)
 )
 
 #ifndef USER_ANNOTATION_FUNCTION

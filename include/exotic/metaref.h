@@ -104,8 +104,8 @@ typedef struct annotation_struct_ {
     #include <exotic/metaref.h>
     
     STRUCT(Davit, 
-        FIELD(int, num)
-        FIELD(char *, str)
+        FIELD({}, int, num)
+        FIELD({}, char *, str)
     )
     \endcode
     
@@ -131,6 +131,7 @@ typedef struct field_struct_ {
     const char *type;                /**< The type of of the field in `char *` */
     const char *name;                /**< The identifier of of the field */
     void **ptr_address;        /**< The field location in memory, dereferenced value of ptr_address can be used to set the field value */
+    const Annotation annotations[10]; /**< The size of the field annotation, 10 by default */
 } Field;
 
 /**
@@ -155,6 +156,9 @@ typedef struct struct_struct_ {
     #undef _S
     #undef _I
     #undef _F
+    #undef _FS
+    #undef _FI
+    #undef _FF
 #endif
 
 /**
@@ -182,7 +186,7 @@ typedef struct struct_struct_ {
 /**
 
 */   
-#define FIELD(type_v, identifier) \
+#define FIELD(annotations, type_v, identifier) \
     type_v identifier;
     
 /**
@@ -194,7 +198,9 @@ typedef struct struct_struct_ {
     \code
     _S(DATABASE_table, "user")
     STRUCT(User,
-        FIELD(char *, name)
+        FIELD({
+            _S(JSON_value, "Name")
+        }, char *, name)
     )
     \endcode
     
@@ -213,7 +219,9 @@ typedef struct struct_struct_ {
     _I(SIZE_min, 1)
     _I(SIZE_max, 10)
     STRUCT(User,
-        FIELD(char *, name)
+        FIELD({
+            _S(JSON_value, "Name")
+        }, char *, name)
     )
     \endcode
     
@@ -231,7 +239,9 @@ typedef struct struct_struct_ {
     \code
     _F(TO_STRING, user_to_string)
     STRUCT(User,
-        FIELD(char *, name)
+        FIELD({
+            _S(JSON_value, "Name")
+        }, char *, name)
     )
     
     #ifndef _DCLR
@@ -244,8 +254,12 @@ typedef struct struct_struct_ {
     
     \param annotation_name the name of the annotation
     \param annotation_value the string value of the annotation
-*/   
+*/
 #define _F(annotation_name, annotation_value)
+
+#define _FS(annotation_name, annotation_value)
+#define _FI(annotation_name, annotation_value)
+#define _FF(annotation_name, annotation_value)
 
 #include __STRUCT_FILE__
 
@@ -261,19 +275,28 @@ typedef struct struct_struct_ {
 #undef _S
 #undef _I
 #undef _F
+#undef _FS
+#undef _FI
+#undef _FF
 
 #define STRUCT(struct_name, ...)     
 
-#define FIELD(type_v, identifier)
+#define FIELD(annotations, type_v, identifier)
 
 #define _S(annotation_name, annotation_value)\
-        {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, NULL},
+    {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, NULL},
 
 #define _I(annotation_name, annotation_value)\
-        {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, annotation_value, NULL},
+    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, annotation_value, NULL},
 
 #define _F(annotation_name, annotation_value)\
-        {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, -1, annotation_value},
+    {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, -1, annotation_value},
+
+#define _FS(annotation_name, annotation_value)
+
+#define _FI(annotation_name, annotation_value)
+
+#define _FF(annotation_name, annotation_value)
      
 #ifdef __cplusplus
 }
@@ -298,22 +321,34 @@ extern "C" {
 #undef _S
 #undef _I
 #undef _F
+#undef _FS
+#undef _FI
+#undef _FF
 
 #define STRUCT(struct_name, ...) \
     const static Field METAREF_##struct_name##_fields[] = { \
         __VA_ARGS__ \
-        {0, NULL, NULL, NULL},  \
+        {0, NULL, NULL, NULL, {}},  \
     };\
     
     
-#define FIELD(type_v, identifier) \
-    {__LINE__, #type_v, #identifier, NULL},
+#define FIELD(annotations, type_v, identifier) \
+    {__LINE__, #type_v, #identifier, NULL, annotations},
 
 #define _S(annotation_name, annotation_value)
 
 #define _I(annotation_name, annotation_value)
 
 #define _F(annotation_name, annotation_value)
+
+#define _FS(annotation_name, annotation_value)\
+    {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, NULL},
+
+#define _FI(annotation_name, annotation_value)\
+    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, annotation_value, NULL},
+
+#define _FF(annotation_name, annotation_value)\
+    {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, -1, annotation_value},
 
 #include __STRUCT_FILE__
 
@@ -328,6 +363,9 @@ extern "C" {
 #undef _S
 #undef _I
 #undef _F
+#undef _FS
+#undef _FI
+#undef _FF
 
 #define STRUCT(struct_name, ...) \
     Annotation METAREF_##struct_name##_get_annotation(const char *name) {\
@@ -345,11 +383,11 @@ extern "C" {
                 return METAREF_##struct_name##_fields[i];\
             }\
         }\
-        Field METAREF_sub_fields1__ = {0, NULL, NULL, NULL};\
+        Field METAREF_sub_fields1__ = {0, NULL, NULL, NULL, {}};\
         return METAREF_sub_fields1__;\
     }\
     
-#define FIELD(type_v, identifier)
+#define FIELD(annotations, type_v, identifier)
 
 #define _S(annotation_name, annotation_value)
 
@@ -357,13 +395,19 @@ extern "C" {
 
 #define _F(annotation_name, annotation_value)
 
+#define _FS(annotation_name, annotation_value)
+
+#define _FI(annotation_name, annotation_value)
+
+#define _FF(annotation_name, annotation_value)
+
 #ifdef __STRUCT_FILE__
 #include __STRUCT_FILE__
 #undef __STRUCT_FILE__
 #undef __STRUCT_NAME__
 #endif
 
-/* FINAL EXAPNSION
+/* FIFTH EXAPNSION
   -------------------
 
   Store the name of each fields in the 
@@ -374,6 +418,9 @@ extern "C" {
 #undef _S
 #undef _I
 #undef _F
+#undef _FS
+#undef _FI
+#undef _FF
 
 #define STRUCT(struct_name, ...) \
     // Field METAREF_##struct_name##_get_field(const struct_name *the_meta_struct, const char *name) \
@@ -385,8 +432,8 @@ extern "C" {
         // return field; \
     // }
     
-#define FIELD(type_v, identifier) \
-        if (name == #identifier) { \
+#define FIELD(annotations, type_v, identifier) \
+        if (metaref_str_equals(name, #identifier) == 1) { \
             field.ptr_address = (void**)&the_meta_struct->identifier; \
             field.name = name; \
             field.type = #type_v; \
@@ -397,6 +444,42 @@ extern "C" {
 #define _I(annotation_name, annotation_value)
 
 #define _F(annotation_name, annotation_value)
+
+#define _FS(annotation_name, annotation_value)
+
+#define _FI(annotation_name, annotation_value)
+
+#define _FF(annotation_name, annotation_value)
+
+/* SIXTH EXAPNSION
+  -------------------
+
+  Suplement expansion templates
+*/
+#undef STRUCT
+#undef FIELD
+#undef _S
+#undef _I
+#undef _F
+#undef _FS
+#undef _FI
+#undef _FF
+
+#define STRUCT(struct_name, ...)
+    
+#define FIELD(annotations, type_v, identifier)
+
+#define _S(annotation_name, annotation_value)
+
+#define _I(annotation_name, annotation_value)
+
+#define _F(annotation_name, annotation_value)
+
+#define _FS(annotation_name, annotation_value)
+
+#define _FI(annotation_name, annotation_value)
+
+#define _FF(annotation_name, annotation_value)
  
 #ifndef METAREF_HELPER_MACROS
 #define METAREF_HELPER_MACROS 
@@ -418,8 +501,8 @@ extern "C" {
     This is equivalent to calling the method directly 
     \code
     STRUCT(Location,
-        FIELD(long, longitude)
-        FIELD(long, latitude)
+        FIELD({}, long, longitude)
+        FIELD({}, long, latitude)
     )
     \endcode
     
@@ -925,6 +1008,26 @@ extern "C" {
 */
 #define METAREF_FIELD_IS_LONG_DOUBLE(struct_name, field_name)\
     ((METAREF_GET_FIELD(struct_name, field_name).type == "long double") == 1)
+    
+/**
+
+*/  
+static unsigned metaref_str_equals(char* arg, char* arg1) {
+    unsigned i = 0;
+    if (arg == NULL || arg1 == NULL) {
+        return 0;
+    }
+    while (1) {
+        if (arg[i] == '\0' && arg1[i] == '\0') {
+            break;
+        }
+        if (arg[i] != arg1[i]) {
+            return 0;
+        }
+        ++i;
+    }
+    return 1;
+}
 
 
 // ========================
