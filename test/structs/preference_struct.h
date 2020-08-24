@@ -4,19 +4,23 @@
     
 STRUCT(Preference,
     FIELD({
-        _FS(KONFIGER_value, "IpAddress")
+    _FS(KONFIGER_value, "IpAddress")
     }, char *, ip_address)
+    
     FIELD({}, int, MainPort)
-    /*ANNOTATED_FIELD(
-        _S(DATABASE_column, "project")
-        _S(JSON_value, "project_data")
-        _S(KONFIGER_value, "project")
-        _I(SIZE_min, 10)
-        _I(SIZE_max, 50)
-        _S(SIZE_msg, "The length must be between 10 and 50")
-        _F(URL_prefix, get_map_prefix)
-        FIELD(char *, google_map_link)
-    )*/
+    
+    FIELD({
+    _FF(URL_prefix, get_map_prefix)
+    }, char *, google_map_link)
+    
+    FIELD({
+    _FS(DATABASE_column, "fullname")
+    _FS(JSON_value, "full_name")
+    _FS(KONFIGER_value, "FullName")
+    _FI(SIZE_min, 10)
+    _FI(SIZE_max, 150)
+    _FS(SIZE_msg, "The length of the name must be between 10 and 50")
+    }, char *, fullname)
 )
 
 #ifndef PREFERENCE_STRUCT_FUNCTION

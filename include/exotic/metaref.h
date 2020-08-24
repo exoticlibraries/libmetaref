@@ -142,6 +142,26 @@ typedef struct struct_struct_ {
     const char *file_name;
     size_t line_num;
 } Struct;
+    
+/**
+
+*/  
+static unsigned metaref_str_equals(const char* arg, const char* arg1) {
+    unsigned i = 0;
+    if (arg == NULL || arg1 == NULL) {
+        return 0;
+    }
+    while (1) {
+        if (arg[i] == '\0' && arg1[i] == '\0') {
+            break;
+        }
+        if (arg[i] != arg1[i]) {
+            return 0;
+        }
+        ++i;
+    }
+    return 1;
+}
 #endif
 
 /* FIRST EXAPNSION
@@ -370,7 +390,7 @@ extern "C" {
 #define STRUCT(struct_name, ...) \
     Annotation METAREF_##struct_name##_get_annotation(const char *name) {\
         for(size_t i = 0; METAREF_##struct_name##_annotations[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
-            if (METAREF_##struct_name##_annotations[i].name == name) {\
+            if (metaref_str_equals(METAREF_##struct_name##_annotations[i].name, name)) {\
                 return METAREF_##struct_name##_annotations[i];\
             }\
         }\
@@ -379,7 +399,7 @@ extern "C" {
     }\
     Field METAREF_##struct_name##_get_field_name(const char *name) {\
         for(size_t i = 0; METAREF_##struct_name##_fields[i].type != NULL; ++i) {\
-            if (METAREF_##struct_name##_fields[i].name == name) {\
+            if (metaref_str_equals(METAREF_##struct_name##_fields[i].name, name)) {\
                 return METAREF_##struct_name##_fields[i];\
             }\
         }\
@@ -1010,24 +1030,25 @@ extern "C" {
     ((METAREF_GET_FIELD(struct_name, field_name).type == "long double") == 1)
     
 /**
+    Get all field annotations
 
-*/  
-static unsigned metaref_str_equals(char* arg, char* arg1) {
-    unsigned i = 0;
-    if (arg == NULL || arg1 == NULL) {
-        return 0;
+    \param field the field value
+*/
+#define METAREF_GET_FIELD_ANNOTATIONS(field) field.annotations
+    
+/**
+    Iterate through all the field annotations
+    
+    \param struct_name the struct name (not variable name)
+    \param field the field object to get it annotations
+    \param annotation the active annotation value
+    \param body the for loop body
+*/
+#define FOREACH_FIELD_ANNOTATION(struct_name, field, annotation, body)\
+    for(size_t mr_i_ = 0; field.annotations[mr_i_].line_num != 0; ++mr_i_) {\
+        Annotation annotation = field.annotations[mr_i_];    \
+        body   \
     }
-    while (1) {
-        if (arg[i] == '\0' && arg1[i] == '\0') {
-            break;
-        }
-        if (arg[i] != arg1[i]) {
-            return 0;
-        }
-        ++i;
-    }
-    return 1;
-}
 
 
 // ========================

@@ -4,6 +4,6 @@
 #include <exotic/metaref.h>
 
 STRUCT(Date,
-    FIELD(char *, time)
-    FIELD(int, day)
+    FIELD({}, char *, time)
+    FIELD({}, int, day)
 )
