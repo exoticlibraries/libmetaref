@@ -66,6 +66,7 @@ typedef void *(*func_ptr_)(const void *);
 
 typedef enum metaref_annoptation_type_ {
     METAREF_ANNOTATION_STRING,
+    METAREF_ANNOTATION_INT,
     METAREF_ANNOTATION_LONG,
     METAREF_ANNOTATION_FUNCTION,
     METAREF_ANNOTATION_TERMINATOR
@@ -80,6 +81,7 @@ typedef struct annotation_struct_ {
     const AnnotationType type;
     const char *name;
     const char *str_value;
+    int int_value;
     long long_value;
     func_ptr_ func_ptr;
 } Annotation;
@@ -175,9 +177,11 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
     #undef FIELD
     #undef _S
     #undef _I
+    #undef _L
     #undef _F
     #undef _FS
     #undef _FI
+    #undef _FL
     #undef _FF
 #endif
 
@@ -230,7 +234,7 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
 #define _S(annotation_name, annotation_value)
     
 /**
-    Create a long value annotation for 
+    Create an integer value annotation for 
     a struct. 
     
     Example:
@@ -246,9 +250,30 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
     \endcode
     
     \param annotation_name the name of the annotation
-    \param annotation_value the long value of the annotation
+    \param annotation_value the integer value of the annotation
 */   
 #define _I(annotation_name, annotation_value)
+    
+/**
+    Create a long value annotation for 
+    a struct. 
+    
+    Example:
+    
+    \code
+    _L(SIZE_min, 1)
+    _L(SIZE_max, 10)
+    STRUCT(User,
+        FIELD({
+            _S(JSON_value, "Name")
+        }, char *, name)
+    )
+    \endcode
+    
+    \param annotation_name the name of the annotation
+    \param annotation_value the long value of the annotation
+*/   
+#define _L(annotation_name, annotation_value)
     
 /**
     Create a function value annotation for 
@@ -279,6 +304,7 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
 
 #define _FS(annotation_name, annotation_value)
 #define _FI(annotation_name, annotation_value)
+#define _FL(annotation_name, annotation_value)
 #define _FF(annotation_name, annotation_value)
 
 #include __STRUCT_FILE__
@@ -294,9 +320,11 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
 #undef FIELD
 #undef _S
 #undef _I
+#undef _L
 #undef _F
 #undef _FS
 #undef _FI
+#undef _FL
 #undef _FF
 
 #define STRUCT(struct_name, ...)     
@@ -304,17 +332,22 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
 #define FIELD(annotations, type_v, identifier)
 
 #define _S(annotation_name, annotation_value)\
-    {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, NULL},
+    {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, -1, NULL},
 
 #define _I(annotation_name, annotation_value)\
-    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, annotation_value, NULL},
+    {__LINE__, METAREF_ANNOTATION_INT, #annotation_name, NULL, annotation_value, -1, NULL},
+
+#define _L(annotation_name, annotation_value)\
+    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, -1, annotation_value, NULL},
 
 #define _F(annotation_name, annotation_value)\
-    {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, -1, annotation_value},
+    {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, -1, -1, annotation_value},
 
 #define _FS(annotation_name, annotation_value)
 
 #define _FI(annotation_name, annotation_value)
+
+#define _FL(annotation_name, annotation_value)
 
 #define _FF(annotation_name, annotation_value)
      
@@ -323,7 +356,7 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
 #endif     
 const static Annotation METAREF_CONCAT(METAREF_, METAREF_CONCAT(__STRUCT_NAME__, _annotations))[] = {
 #include __STRUCT_FILE__
-{0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, NULL}
+{0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, -1, NULL}
 };
 #ifdef __cplusplus
 extern "C" {
@@ -340,9 +373,11 @@ extern "C" {
 #undef FIELD
 #undef _S
 #undef _I
+#undef _L
 #undef _F
 #undef _FS
 #undef _FI
+#undef _FL
 #undef _FF
 
 #define STRUCT(struct_name, ...) \
@@ -359,16 +394,21 @@ extern "C" {
 
 #define _I(annotation_name, annotation_value)
 
+#define _L(annotation_name, annotation_value)
+
 #define _F(annotation_name, annotation_value)
 
 #define _FS(annotation_name, annotation_value)\
-    {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, NULL},
+    {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, -1, NULL},
 
 #define _FI(annotation_name, annotation_value)\
-    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, annotation_value, NULL},
+    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, annotation_value, -1, NULL},
+
+#define _FL(annotation_name, annotation_value)\
+    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, -1, annotation_value, NULL},
 
 #define _FF(annotation_name, annotation_value)\
-    {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, -1, annotation_value},
+    {__LINE__, METAREF_ANNOTATION_FUNCTION, #annotation_name, NULL, -1, -1, annotation_value},
 
 #include __STRUCT_FILE__
 
@@ -382,9 +422,11 @@ extern "C" {
 #undef FIELD
 #undef _S
 #undef _I
+#undef _L
 #undef _F
 #undef _FS
 #undef _FI
+#undef _FL
 #undef _FF
 
 #define STRUCT(struct_name, ...) \
@@ -394,7 +436,7 @@ extern "C" {
                 return METAREF_##struct_name##_annotations[i];\
             }\
         }\
-        Annotation METAREF_sub_fields__ = {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, NULL};\
+        Annotation METAREF_sub_fields__ = {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, -1, NULL};\
         return METAREF_sub_fields__;\
     }\
     Field METAREF_##struct_name##_get_field_name(const char *name) {\
@@ -413,11 +455,15 @@ extern "C" {
 
 #define _I(annotation_name, annotation_value)
 
+#define _L(annotation_name, annotation_value)
+
 #define _F(annotation_name, annotation_value)
 
 #define _FS(annotation_name, annotation_value)
 
 #define _FI(annotation_name, annotation_value)
+
+#define _FL(annotation_name, annotation_value)
 
 #define _FF(annotation_name, annotation_value)
 
@@ -437,9 +483,11 @@ extern "C" {
 #undef FIELD
 #undef _S
 #undef _I
+#undef _L
 #undef _F
 #undef _FS
 #undef _FI
+#undef _FL
 #undef _FF
 
 #define STRUCT(struct_name, ...) \
@@ -463,11 +511,15 @@ extern "C" {
 
 #define _I(annotation_name, annotation_value)
 
+#define _L(annotation_name, annotation_value)
+
 #define _F(annotation_name, annotation_value)
 
 #define _FS(annotation_name, annotation_value)
 
 #define _FI(annotation_name, annotation_value)
+
+#define _FL(annotation_name, annotation_value)
 
 #define _FF(annotation_name, annotation_value)
 
@@ -480,9 +532,11 @@ extern "C" {
 #undef FIELD
 #undef _S
 #undef _I
+#undef _L
 #undef _F
 #undef _FS
 #undef _FI
+#undef _FL
 #undef _FF
 
 #define STRUCT(struct_name, ...)
@@ -493,11 +547,15 @@ extern "C" {
 
 #define _I(annotation_name, annotation_value)
 
+#define _L(annotation_name, annotation_value)
+
 #define _F(annotation_name, annotation_value)
 
 #define _FS(annotation_name, annotation_value)
 
 #define _FI(annotation_name, annotation_value)
+
+#define _FL(annotation_name, annotation_value)
 
 #define _FF(annotation_name, annotation_value)
  
@@ -602,9 +660,32 @@ extern "C" {
     : "")
     
 /**
-    Check if the struct annotation type is long. 
+    Check if the struct annotation type is an integer. 
     That is the annotation is declared using the macro 
     **_I(x,y)**
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_ANNOTATION_IS_INT(struct_name, annotation_name)\
+    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_INT)
+    
+/**
+    Get the int value of annotation declared with 
+    the macro **_I(x,y)**
+    
+    \param struct_name the struct name (not variable name)
+    \param annotation_name the annotation name (string)
+*/
+#define STRUCT_ANNOTATION_INT_VALUE(struct_name, annotation_name)\
+    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_INT ? \
+    STRUCT_GET_ANNOTATION(struct_name, annotation_name).int_value\
+    : -1)
+    
+/**
+    Check if the struct annotation type is long. 
+    That is the annotation is declared using the macro 
+    **_L(x,y)**
     
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
@@ -614,7 +695,7 @@ extern "C" {
     
 /**
     Get the long value of annotation declared with 
-    the macro **_I(x,y)**
+    the macro **_L(x,y)**
     
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)

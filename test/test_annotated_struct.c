@@ -26,7 +26,9 @@ CESTER_TEST(check_struct_long_annotation, _,
     cester_assert_ptr_not_equal((void*)STRUCT_GET_ANNOTATION(User, "SIZE_max").name, NULL);
     cester_assert_false(STRUCT_ANNOTATION_IS_STRING(User, "SIZE_max"));
     cester_assert_true(STRUCT_ANNOTATION_IS_LONG(User, "SIZE_max"));
+    cester_assert_true(STRUCT_ANNOTATION_IS_INT(User, "SIZE_min"));
     cester_assert_long_eq(STRUCT_ANNOTATION_LONG_VALUE(User, "SIZE_max"), 2000);
+    cester_assert_long_eq(STRUCT_ANNOTATION_INT_VALUE(User, "SIZE_min"), 10);
 )
 
 CESTER_TEST(check_struct_function_annotation, _,        
