@@ -164,6 +164,15 @@ static unsigned metaref_str_equals(const char* arg, const char* arg1) {
     }
     return 1;
 }
+
+static Annotation inline metaref_get_field_annotation(Field field, const char *name) {
+    for(int _iter_index = 0; field.annotations[_iter_index].line_num != 0; ++_iter_index) {
+        if (metaref_str_equals(field.annotations[_iter_index].name, name)) {
+            return field.annotations[_iter_index];
+        }
+    }
+    return {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, -1, NULL};
+}
 #endif
 
 /* FIRST EXAPNSION
@@ -615,7 +624,7 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_GET_ANNOTATION(struct_name, annotation_name)\
+#define METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name)\
     METAREF_##struct_name##_get_annotation(annotation_name)
     
 /**
@@ -624,8 +633,8 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_GET_ANNOTATION2(struct_name, annotation_name)\
-    STRUCT_GET_ANNOTATION(struct_name, #annotation_name)
+#define METAREF_STRUCT_GET_ANNOTATION2(struct_name, annotation_name)\
+    METAREF_STRUCT_GET_ANNOTATION(struct_name, #annotation_name)
     
 /**
     Check if the struct contains an annotation
@@ -633,8 +642,8 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_HAS_ANNOTATION(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type != METAREF_ANNOTATION_TERMINATOR)
+#define METAREF_STRUCT_HAS_ANNOTATION(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type != METAREF_ANNOTATION_TERMINATOR)
     
 /**
     Check if the struct annotation type is string. 
@@ -644,8 +653,8 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_IS_STRING(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_STRING)
+#define METAREF_STRUCT_ANNOTATION_IS_STRING(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_STRING)
     
 /**
     Get the string value of annotation declared with 
@@ -654,9 +663,9 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_STR_VALUE(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_STRING ? \
-    STRUCT_GET_ANNOTATION(struct_name, annotation_name).str_value\
+#define METAREF_STRUCT_ANNOTATION_STR_VALUE(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_STRING ? \
+    METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).str_value\
     : "")
     
 /**
@@ -667,8 +676,8 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_IS_INT(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_INT)
+#define METAREF_STRUCT_ANNOTATION_IS_INT(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_INT)
     
 /**
     Get the int value of annotation declared with 
@@ -677,9 +686,9 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_INT_VALUE(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_INT ? \
-    STRUCT_GET_ANNOTATION(struct_name, annotation_name).int_value\
+#define METAREF_STRUCT_ANNOTATION_INT_VALUE(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_INT ? \
+    METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).int_value\
     : -1)
     
 /**
@@ -690,8 +699,8 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_IS_LONG(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_LONG)
+#define METAREF_STRUCT_ANNOTATION_IS_LONG(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_LONG)
     
 /**
     Get the long value of annotation declared with 
@@ -700,9 +709,9 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_LONG_VALUE(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_LONG ? \
-    STRUCT_GET_ANNOTATION(struct_name, annotation_name).long_value\
+#define METAREF_STRUCT_ANNOTATION_LONG_VALUE(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_LONG ? \
+    METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).long_value\
     : -1)
     
 /**
@@ -713,8 +722,8 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_IS_FUNCTION(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_FUNCTION)
+#define METAREF_STRUCT_ANNOTATION_IS_FUNCTION(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_FUNCTION)
     
 /**
     Get the string value of annotation declared with 
@@ -723,9 +732,9 @@ extern "C" {
     \param struct_name the struct name (not variable name)
     \param annotation_name the annotation name (string)
 */
-#define STRUCT_ANNOTATION_FUNC_VALUE(struct_name, annotation_name)\
-    (STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_FUNCTION ? \
-    STRUCT_GET_ANNOTATION(struct_name, annotation_name).func_ptr\
+#define METAREF_STRUCT_ANNOTATION_FUNC_VALUE(struct_name, annotation_name)\
+    (METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).type == METAREF_ANNOTATION_FUNCTION ? \
+    METAREF_STRUCT_GET_ANNOTATION(struct_name, annotation_name).func_ptr\
     : NULL)
     
 /**
@@ -1125,11 +1134,130 @@ extern "C" {
     \param annotation the active annotation value
     \param body the for loop body
 */
-#define FOREACH_FIELD_ANNOTATION(struct_name, field, annotation, body)\
+#define FOREACH_FIELD_ANNOTATION(field, annotation, body)\
     for(size_t mr_i_ = 0; field.annotations[mr_i_].line_num != 0; ++mr_i_) {\
         Annotation annotation = field.annotations[mr_i_];    \
         body   \
     }
+    
+/**
+    Get a field annotation using the annotation name
+
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_GET_ANNOTATION(field, annotation_name)\
+    metaref_get_field_annotation(field, annotation_name)
+    
+/**
+    Get a string annotation using the annotation name
+
+    \param field the field object
+    \param annotation_name the annotation name (unquoted string)
+*/
+#define METAREF_FIELD_GET_ANNOTATION2(field, annotation_name)\
+    METAREF_FIELD_GET_ANNOTATION(field, #annotation_name)
+    
+/**
+    Check if the field has an annotation
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_HAS_ANNOTATION(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type != METAREF_ANNOTATION_TERMINATOR)
+    
+/**
+    Check if the struct annotation type is string. 
+    That is the annotation is declared using the macro 
+    **_FS(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_IS_STRING(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_STRING)
+    
+/**
+    Get the string value of annotation declared with 
+    the macro **_FS(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_STR_VALUE(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_STRING ? \
+    METAREF_FIELD_GET_ANNOTATION(field, annotation_name).str_value\
+    : "")
+    
+/**
+    Check if the struct annotation type is an integer. 
+    That is the annotation is declared using the macro 
+    **_FI(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_IS_INT(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_INT)
+    
+/**
+    Get the int value of annotation declared with 
+    the macro **_FI(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_INT_VALUE(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_INT ? \
+    METAREF_FIELD_GET_ANNOTATION(field, annotation_name).int_value\
+    : -1)
+    
+/**
+    Check if the struct annotation type is long. 
+    That is the annotation is declared using the macro 
+    **_FL(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_IS_LONG(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_LONG)
+    
+/**
+    Get the long value of annotation declared with 
+    the macro **_FL(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_LONG_VALUE(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_LONG ? \
+    METAREF_FIELD_GET_ANNOTATION(field, annotation_name).long_value\
+    : -1)
+    
+/**
+    Check if the struct annotation type is function. 
+    That is the annotation is declared using the macro 
+    **_FF(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_IS_FUNCTION(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_FUNCTION)
+    
+/**
+    Get the string value of annotation declared with 
+    the macro **_FF(x,y)**
+    
+    \param field the field object
+    \param annotation_name the annotation name (string)
+*/
+#define METAREF_FIELD_ANNOTATION_FUNC_VALUE(field, annotation_name)\
+    (METAREF_FIELD_GET_ANNOTATION(field, annotation_name).type == METAREF_ANNOTATION_FUNCTION ? \
+    METAREF_FIELD_GET_ANNOTATION(field, annotation_name).func_ptr\
+    : NULL)
 
 
 // ========================

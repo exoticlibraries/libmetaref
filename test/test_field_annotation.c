@@ -44,17 +44,17 @@ CESTER_TEST(iterate_annotations_raw, _,
 
 CESTER_TEST(iterate_annotations_macro_helper, _,
     Field field1 = METAREF_GET_FIELD(Preference, "ip_address");
-    FOREACH_FIELD_ANNOTATION(Preference, field1, annotation, {
+    FOREACH_FIELD_ANNOTATION(field1, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })
     
     Field field2 = METAREF_GET_FIELD(Preference, "google_map_link");
-    FOREACH_FIELD_ANNOTATION(Preference, field2, annotation, {
+    FOREACH_FIELD_ANNOTATION(field2, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })
     
     Field field3 = METAREF_GET_FIELD(Preference, "fullname");
-    FOREACH_FIELD_ANNOTATION(Preference, field3, annotation, {
+    FOREACH_FIELD_ANNOTATION(field3, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })
 )
