@@ -21,6 +21,11 @@ STRUCT(Preference,
     _FI(SIZE_max, 150)
     _FS(SIZE_msg, "The length of the name must be between 10 and 50")
     }, char *, fullname)
+    
+    FIELD({
+    _FL(NUMBER_long, 7652653625635265)
+    _FS(KONFIGER_value, "AlwaysReconnect")
+    }, unsigned, always_reconnect)
 )
 
 #ifndef PREFERENCE_STRUCT_FUNCTION

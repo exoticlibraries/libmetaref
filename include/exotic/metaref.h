@@ -64,7 +64,7 @@ extern "C" {
 */
 typedef void *(*func_ptr_)(const void *);
 
-typedef enum metaref_annoptation_type_ {
+typedef enum metaref_annotation_type_ {
     METAREF_ANNOTATION_STRING,
     METAREF_ANNOTATION_INT,
     METAREF_ANNOTATION_LONG,
@@ -82,7 +82,7 @@ typedef struct annotation_struct_ {
     const char *name;
     const char *str_value;
     int int_value;
-    long long_value;
+    long long long_value;
     func_ptr_ func_ptr;
 } Annotation;
 
@@ -171,7 +171,8 @@ static Annotation inline metaref_get_field_annotation(Field field, const char *n
             return field.annotations[_iter_index];
         }
     }
-    return {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, -1, NULL};
+    Annotation METAREF_sub_annotation__ = {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, -1, NULL};
+    return METAREF_sub_annotation__ ;
 }
 #endif
 
@@ -411,7 +412,7 @@ extern "C" {
     {__LINE__, METAREF_ANNOTATION_STRING, #annotation_name, annotation_value, -1, -1, NULL},
 
 #define _FI(annotation_name, annotation_value)\
-    {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, annotation_value, -1, NULL},
+    {__LINE__, METAREF_ANNOTATION_INT, #annotation_name, NULL, annotation_value, -1, NULL},
 
 #define _FL(annotation_name, annotation_value)\
     {__LINE__, METAREF_ANNOTATION_LONG, #annotation_name, NULL, -1, annotation_value, NULL},

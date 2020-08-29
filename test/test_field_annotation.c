@@ -1,4 +1,4 @@
-/*!g++ {0} -I../../libcester/include/ -I. -I./structs -I../include/ -o out.exe; ./out.exe --cester-verbose */
+/*!g++ {0} -I../../libcester/include/ -I. -I./structs -I../include/ -o out.exe; ./out.exe */
 
 #include <exotic/cester.h>
 #ifndef INCLUDE_STRUCTS
@@ -57,6 +57,11 @@ CESTER_TEST(iterate_annotations_macro_helper, _,
     FOREACH_FIELD_ANNOTATION(field3, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })
+)
+
+CESTER_OPTIONS(
+    CESTER_MINIMAL();
+    CESTER_VERBOSE();
 )
 
 

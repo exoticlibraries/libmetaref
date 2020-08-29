@@ -47,3 +47,8 @@ CESTER_TEST(compare_direct_and_macro_helper, _,
     }
 )
 
+CESTER_OPTIONS(
+    CESTER_MINIMAL();
+    CESTER_VERBOSE();
+)
+

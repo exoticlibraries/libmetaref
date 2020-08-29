@@ -53,3 +53,8 @@ CESTER_TEST(check_struct_field_char, _,
     cester_assert_true(METAREF_FIELD_IS_UCHAR(Types, "field25"));
 )
 
+CESTER_OPTIONS(
+    CESTER_MINIMAL();
+    CESTER_VERBOSE();
+)
+

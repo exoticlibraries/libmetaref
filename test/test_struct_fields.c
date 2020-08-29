@@ -27,3 +27,8 @@ CESTER_TEST(struct_has_field, _,
     cester_assert_true(METAREF_HAS_FIELD(Date, "day"));
     cester_assert_true(METAREF_HAS_FIELD(Date, "time"));
 )
+
+CESTER_OPTIONS(
+    CESTER_MINIMAL();
+    CESTER_VERBOSE();
+)
