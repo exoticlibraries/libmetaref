@@ -15,14 +15,14 @@ CESTER_TEST(iterate_all_struct_annotation, _,
 
 CESTER_TEST(iterate_annotations_raw, _,
     size_t i;
-    Field ip_address_field = METAREF_GET_FIELD(Preference, "ip_address");
+    Field ip_address_field = METAREF_GET_STRUCT_FIELD(Preference, "ip_address");
     cester_assert_int_ne(ip_address_field.line_num, 0);
     for(i = 0; ip_address_field.annotations[i].line_num != 0; ++i) {
         cester_assert_str_not_equal(ip_address_field.annotations[i].name, "");
     }
     
     
-    Field google_map_link_field = METAREF_GET_FIELD(Preference, "google_map_link");
+    Field google_map_link_field = METAREF_GET_STRUCT_FIELD(Preference, "google_map_link");
     cester_assert_int_ne(google_map_link_field.line_num, 0);
     for(i = 0; google_map_link_field.annotations[i].line_num != 0; ++i) {
         if (google_map_link_field.annotations[i].type == METAREF_ANNOTATION_FUNCTION) {
@@ -31,7 +31,7 @@ CESTER_TEST(iterate_annotations_raw, _,
         }
     }
     
-    Field fullname_field = METAREF_GET_FIELD(Preference, "fullname");
+    Field fullname_field = METAREF_GET_STRUCT_FIELD(Preference, "fullname");
     cester_assert_int_ne(fullname_field.line_num, 0);
     for(i = 0; fullname_field.annotations[i].line_num != 0; ++i) {
         if (fullname_field.annotations[i].type == METAREF_ANNOTATION_STRING) {
@@ -43,17 +43,17 @@ CESTER_TEST(iterate_annotations_raw, _,
 )
 
 CESTER_TEST(iterate_annotations_macro_helper, _,
-    Field field1 = METAREF_GET_FIELD(Preference, "ip_address");
+    Field field1 = METAREF_GET_STRUCT_FIELD(Preference, "ip_address");
     FOREACH_FIELD_ANNOTATION(field1, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })
     
-    Field field2 = METAREF_GET_FIELD(Preference, "google_map_link");
+    Field field2 = METAREF_GET_STRUCT_FIELD(Preference, "google_map_link");
     FOREACH_FIELD_ANNOTATION(field2, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })
     
-    Field field3 = METAREF_GET_FIELD(Preference, "fullname");
+    Field field3 = METAREF_GET_STRUCT_FIELD(Preference, "fullname");
     FOREACH_FIELD_ANNOTATION(field3, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })

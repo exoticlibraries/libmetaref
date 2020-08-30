@@ -58,6 +58,8 @@ int main(int argc, char **argv) {
 In the example above the json library handles the struct field assignment, the json values validation.
 The example above is a pseudocode it not expected to compile.
 
-## Limitations
+## Limitations and Safety
+
+Compile time check still happens
 
 It cannot auto detect type of field, esp struct

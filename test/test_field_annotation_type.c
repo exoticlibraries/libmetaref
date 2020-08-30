@@ -7,7 +7,7 @@
 #endif
 
 CESTER_TEST(check_field_string_annotation, _,
-    Field field = METAREF_GET_FIELD(Preference, "ip_address");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "ip_address");
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "KONFIGER_value"));
     cester_assert_ptr_not_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "KONFIGER_value").name, NULL);
     cester_assert_true(METAREF_FIELD_ANNOTATION_IS_STRING(field, "KONFIGER_value"));
@@ -15,7 +15,7 @@ CESTER_TEST(check_field_string_annotation, _,
 )
 
 CESTER_TEST(check_field_string_annotation_2, _,
-    Field field = METAREF_GET_FIELD(Preference, "google_map_link");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "google_map_link");
     cester_assert_false(METAREF_FIELD_HAS_ANNOTATION(field, "KONFIGER_value"));
     cester_assert_ptr_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "KONFIGER_value").name, NULL);
     cester_assert_false(METAREF_FIELD_ANNOTATION_IS_STRING(field, "KONFIGER_value"));
@@ -23,7 +23,7 @@ CESTER_TEST(check_field_string_annotation_2, _,
 )
 
 CESTER_TEST(check_field_string_annotation_3, _,
-    Field field = METAREF_GET_FIELD(Preference, "fullname");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "fullname");
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "KONFIGER_value"));
     cester_assert_ptr_not_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "KONFIGER_value").name, NULL);
     cester_assert_true(METAREF_FIELD_ANNOTATION_IS_STRING(field, "KONFIGER_value"));
@@ -36,7 +36,7 @@ CESTER_TEST(check_field_string_annotation_3, _,
 )
 
 CESTER_TEST(check_field_int_annotation, _,
-    Field field = METAREF_GET_FIELD(Preference, "fullname");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "fullname");
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "SIZE_max"));
     cester_assert_ptr_not_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "SIZE_max").name, NULL);
     cester_assert_false(METAREF_FIELD_ANNOTATION_IS_STRING(field, "SIZE_max"));
@@ -45,7 +45,7 @@ CESTER_TEST(check_field_int_annotation, _,
 )
 
 CESTER_TEST(check_field_int_annotation_2, _,
-    Field field = METAREF_GET_FIELD(Preference, "fullname");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "fullname");
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "SIZE_min"));
     cester_assert_ptr_not_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "SIZE_min").name, NULL);
     cester_assert_false(METAREF_FIELD_ANNOTATION_IS_STRING(field, "SIZE_min"));
@@ -54,7 +54,7 @@ CESTER_TEST(check_field_int_annotation_2, _,
 )
 
 CESTER_TEST(check_field_int_annotation_cmp, _,
-    Field field = METAREF_GET_FIELD(Preference, "fullname");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "fullname");
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "SIZE_max"));
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "SIZE_min"));
     int min = METAREF_FIELD_ANNOTATION_INT_VALUE(field, "SIZE_min");
@@ -63,7 +63,7 @@ CESTER_TEST(check_field_int_annotation_cmp, _,
 )
 
 CESTER_TEST(check_field_long_annotation, _,
-    Field field = METAREF_GET_FIELD(Preference, "always_reconnect");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "always_reconnect");
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "NUMBER_long"));
     cester_assert_ptr_not_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "NUMBER_long").name, NULL);
     cester_assert_false(METAREF_FIELD_ANNOTATION_IS_STRING(field, "NUMBER_long"));
@@ -74,7 +74,7 @@ CESTER_TEST(check_field_long_annotation, _,
 )
 
 CESTER_TEST(check_field_function_annotation, _,
-    Field field = METAREF_GET_FIELD(Preference, "google_map_link");
+    Field field = METAREF_GET_STRUCT_FIELD(Preference, "google_map_link");
     cester_assert_true(METAREF_FIELD_HAS_ANNOTATION(field, "URL_prefix"));
     cester_assert_ptr_not_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "URL_prefix").name, NULL);
     cester_assert_false(METAREF_FIELD_ANNOTATION_IS_STRING(field, "URL_prefix"));

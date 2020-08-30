@@ -40,9 +40,11 @@ STRUCT(Types,
     FIELD({}, signed char, field24)
     FIELD({}, unsigned char, field25)
     
-    //_I(IS_STRUCT, 1)
-    FIELD({}, Date *, field26)
+    FIELD({
+    _FI(IS_STRUCT, 1)
+    }, Date *, field26)
     
-    //_I(IS_STRUCT, 1)
-    FIELD({}, Friend *, field27)
+    FIELD({
+    _FI(IS_STRUCT, 1)
+    }, Friend *, field27)
 )
