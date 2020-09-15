@@ -1,0 +1,68 @@
+
+
+
+.header {
+    position: absolute;
+    background-color: #292929;
+    color: white;
+    top: 0;
+    padding-top: 110px;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    height: 400px;
+    text-align: center;
+    vertical-align: middle;  
+    overflow: hidden;     
+}
+
+.header .title {
+    color: white;
+    font-size: 300%;
+}
+
+.header .brief {
+    margin-top: 20px !important;
+}
+
+.header img {
+    width: 100px;
+    height: 100px;
+}
+
+.header .linksdiv {
+    padding-top: 60px;
+    min-height: 100%;
+    overflow: hidden;
+}
+
+.header .link {
+    margin: 10px;
+    padding: 12px;
+    padding-left: 35px;
+    padding-right: 35px;
+    background: white;
+    color: #292929 !important;
+    text-decoration: none;
+    border-radius: 5px;
+    border: white 1px solid;
+}
+
+.header .link:hover {
+    text-decoration: none;
+    background: #292929;
+    color: white !important;
+}
+
+.header p {
+    color: white !important;
+    font-size: 21px;
+    margin-top: 5px;
+    text-align: center;
+    width: 50%;
+    margin:0 auto;
+}
+
+.bodywrapper {
+    min-height: 80vh;
+}

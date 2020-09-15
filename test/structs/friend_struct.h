@@ -4,7 +4,7 @@
 #include <exotic/metaref.h>
 
 STRUCT(Friend,
-    FIELD(char*, name)
-    FIELD(char*, picture)
+    FIELD({}, char*, name)
+    FIELD({}, char*, picture)
 )
 

@@ -57,3 +57,31 @@ int main(int argc, char **argv) {
 
 In the example above the json library handles the struct field assignment, the json values validation.
 The example above is a pseudocode it not expected to compile.
+
+# Note
+
+Must initialize the struct with calloc to enable all the field values 
+are NULL
+
+## Limitations and Safety
+
+Compile time check still happens
+
+It cannot auto detect type of field, esp struct
+
+# Best practice
+
+Functions expecting struct created with metaref should have the `_metaref` prefix. 
+E.g. 
+
+A function that accept struct not defined with metaref
+
+```c
+unsigned struct_to_string(void*);
+```
+
+A function that accept struct defined with metaref
+
+```c
+unsigned struct_to_string_metaref(void*);
+```
