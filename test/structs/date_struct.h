@@ -6,4 +6,5 @@
 STRUCT(Date,
     FIELD({}, char *, time)
     FIELD({}, int, day)
+    FIELD({}, int, month)
 )

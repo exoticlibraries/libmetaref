@@ -143,10 +143,12 @@ typedef struct field_struct_ {
 /**
     
 */
-typedef struct struct_struct_ {
+typedef struct metaref_struct_ {
     const char *name;
     const char *file_name;
     size_t line_num;
+    const Field *fields_array;
+    const Annotation *annotations_array;
 } Struct;
     
 /**
@@ -178,6 +180,16 @@ static Annotation inline metaref_get_field_annotation(Field field, const char *n
     Annotation METAREF_sub_annotation__ = {0, METAREF_ANNOTATION_TERMINATOR, NULL, NULL, -1, -1, NULL};
     return METAREF_sub_annotation__ ;
 }
+
+static Field metaref_struct_get_field(Struct *the_struct, const char *name) {
+    for(size_t i = 0; the_struct->fields_array[i].type != NULL; ++i) {
+        if (metaref_str_equals(the_struct->fields_array[i].name, name)) {
+            return the_struct->fields_array[i];
+        }
+    }
+    Field METAREF_sub_fields1__ = {0, NULL, NULL, NULL, {}};
+    return METAREF_sub_fields1__;
+}
 #endif
 
 /* FIRST EXAPNSION
@@ -208,18 +220,8 @@ static Annotation inline metaref_get_field_annotation(Field field, const char *n
 #define STRUCT(struct_name, ...) \
     typedef struct METAREF_##struct_name { \
         __VA_ARGS__ \
+        Struct *metaref_obj; \
     } struct_name;\
-    \
-    Struct *METAREF_##struct_name##_Struct; \
-    Struct *METAREF_##struct_name##_Struct_init() { \
-        if (METAREF_##struct_name##_Struct == NULL) {\
-            METAREF_##struct_name##_Struct = (Struct *) malloc(sizeof(Struct));\
-            METAREF_##struct_name##_Struct->name = #struct_name;\
-            METAREF_##struct_name##_Struct->file_name = __FILE__;\
-            METAREF_##struct_name##_Struct->line_num = __LINE__;\
-        }\
-        return METAREF_##struct_name##_Struct;\
-    }
    
 /**
 
@@ -395,11 +397,10 @@ extern "C" {
 #undef _FF
 
 #define STRUCT(struct_name, ...) \
-    const static Field METAREF_##struct_name##_fields[] = { \
+    static Field METAREF_##struct_name##_fields[] = { \
         __VA_ARGS__ \
         {0, NULL, NULL, NULL, {}},  \
-    };\
-    
+    };    
     
 #define FIELD(annotations, type_v, identifier) \
     {__LINE__, #type_v, #identifier, NULL, annotations},
@@ -501,19 +502,28 @@ extern "C" {
 #undef _FF
 
 #define STRUCT(struct_name, ...) \
-    Field METAREF_##struct_name##_get_field(const struct_name *the_meta_struct, const char *name) \
-    {  \
-        Field metaref_field___ = METAREF_##struct_name##_get_field_name(name);\
-        __VA_ARGS__\
-        return metaref_field___;\
+    Struct *METAREF_##struct_name##_Struct; \
+    Struct *METAREF_##struct_name##_Struct_init(const struct_name *the_meta_struct) { \
+        if (METAREF_##struct_name##_Struct == NULL) {\
+            for(size_t i = 0; METAREF_##struct_name##_fields[i].type != NULL && the_meta_struct != NULL; ++i) {\
+                Field metaref_field___ = METAREF_##struct_name##_fields[i];\
+                __VA_ARGS__\
+                METAREF_##struct_name##_fields[i].ptr_address = metaref_field___.ptr_address;\
+            }\
+            METAREF_##struct_name##_Struct = (Struct *) malloc(sizeof(Struct));\
+            METAREF_##struct_name##_Struct->name = #struct_name;\
+            METAREF_##struct_name##_Struct->file_name = __FILE__;\
+            METAREF_##struct_name##_Struct->line_num = __LINE__;\
+            METAREF_##struct_name##_Struct->fields_array = METAREF_##struct_name##_fields;\
+            METAREF_##struct_name##_Struct->annotations_array = METAREF_##struct_name##_annotations;\
+        }\
+        return METAREF_##struct_name##_Struct;\
     }
     
 #define FIELD(annotations, type_v, identifier) \
-    if (metaref_field___.type != NULL) {\
-        if (metaref_str_equals(name, #identifier) == 1) {\
-            metaref_field___.ptr_address = (void**)&the_meta_struct->identifier;\
-        }\
-    }\
+    if (metaref_str_equals(metaref_field___.name, #identifier) == 1) {\
+        metaref_field___.ptr_address = (METAREF_FIELD_PTR_ADDRESS_TYPE)&the_meta_struct->identifier;\
+    }
 
 #define _S(annotation_name, annotation_value)
 
@@ -611,9 +621,12 @@ extern "C" {
     After using the object in the a code block it should be 
     freed to avoid dangling in memory. Free the object with 
     the macro `METAREF_FREE_STRUCT`.
+    
+    If the second parameter (struct_object) is NULL the values 
+    of each fields of the struct will not be set. 
 */
-#define METAREF_GET_STRUCT(struct_name)\
-    METAREF_##struct_name##_Struct_init();
+#define METAREF_GET_STRUCT(struct_name, struct_object)\
+    METAREF_##struct_name##_Struct_init(struct_object);
     
 /**
     Destroy the `Struct *` object that is initialized 
@@ -762,6 +775,57 @@ extern "C" {
     }
     
 /**
+    Iterate through all the struct annotations
+    
+    \param the_struct the struct object 
+    \param annotation the annotation object (string)
+    \param body the for loop body
+*/
+#define FOREACH_ANNOTATION(the_struct, annotation, body)\
+    for(size_t i = 0; the_struct->annotations_array[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
+        Annotation annotation = the_struct->annotations_array[i];    \
+        body   \
+    }
+    
+/**
+    Iterate through all the struct annotation
+    
+    \param struct_name the struct name (not variable name)
+    \param index the annotation object index (size_t)
+    \param annotation the annotation object (string)
+    \param body the for loop body
+*/
+#define FOREACH_STRUCT_ANNOTATION_INDEX(struct_name, index, annotation, body)\
+    for(size_t i = 0; METAREF_##struct_name##_annotations[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
+        size_t index = i;\
+        Annotation annotation = METAREF_##struct_name##_annotations[index];    \
+        body   \
+    }
+    
+/**
+    Iterate through all the struct annotation
+    
+    \param the_struct the struct object 
+    \param index the annotation object index (size_t)
+    \param annotation the annotation object (string)
+    \param body the for loop body
+*/
+#define FOREACH_ANNOTATION_INDEX(the_struct, index, annotation, body)\
+    for(size_t i = 0; the_struct->annotations_array[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
+        size_t index = i;\
+        Annotation annotation = the_struct->annotations_array[index];    \
+        body   \
+    }
+    
+/**
+    Get the number of fields the struct.
+    
+    \param struct_name the struct name (not variable name)
+*/
+#define METAREF_STRUCT_FIELD_COUNT(struct_name)\
+    ((sizeof(METAREF_##struct_name##_fields) / sizeof(METAREF_##struct_name##_fields[0])) - 1)
+    
+/**
     Get the field object using the field identifier.
     
     \param struct_name the struct name (not variable name)
@@ -793,6 +857,21 @@ extern "C" {
     }
     
 /**
+    Iterate through all the struct fields
+    
+    \param struct_name the struct name (not variable name)
+    \param index the index of the field in the array
+    \param field the field variable to use in the loop
+    \param body the for loop body
+*/
+#define FOREACH_STRUCT_FIELD_INDEX(struct_name, index, field, body)\
+    for(size_t i = 0; METAREF_##struct_name##_fields[i].type != NULL; ++i) {\
+        size_t index = i; \
+        Field field = METAREF_##struct_name##_fields[index];    \
+        body   \
+    }
+    
+/**
     Check whether a field is string. 
     
     This macro is non efficient at all in determining 
@@ -811,14 +890,16 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is char *
 */
-#define METAREF_FIELD_IS_CHAR_ARRAY(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "char *") == 1 || \
-    metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "char*") == 1)
+#define METAREF_FIELD_IS_CHAR_ARRAY(field)\
+    (metaref_str_equals(field.type, "char *") == 1 || \
+    metaref_str_equals(field.type, "char*") == 1)
+    
+#define METAREF_STRUCT_FIELD_IS_CHAR_ARRAY(struct_name, field_name)\
+    (METAREF_FIELD_IS_CHAR_ARRAY(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is char. 
@@ -839,14 +920,16 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is signed
 */
-#define METAREF_FIELD_IS_CHAR(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "char") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "signed char") == 1)
+#define METAREF_FIELD_IS_CHAR(field)\
+    (metaref_str_equals(field.type, "char") == 1 || \
+      metaref_str_equals(field.type, "signed char") == 1)
+      
+#define METAREF_STRUCT_FIELD_IS_CHAR(struct_name, field_name)\
+    (METAREF_FIELD_IS_CHAR(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is unsigned char. 
@@ -866,13 +949,15 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is char
 */
-#define METAREF_FIELD_IS_UCHAR(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "unsigned char") == 1)
+#define METAREF_FIELD_IS_UCHAR(field)\
+    (metaref_str_equals(field.type, "unsigned char") == 1)
+    
+#define METAREF_STRUCT_FIELD_IS_UCHAR(struct_name, field_name)\
+    (METAREF_FIELD_IS_UCHAR(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is int. 
@@ -894,15 +979,17 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is int
 */
-#define METAREF_FIELD_IS_INT(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "int") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "signed") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "signed int") == 1)
+#define METAREF_FIELD_IS_INT(field)\
+    (metaref_str_equals(field.type, "int") == 1 || \
+      metaref_str_equals(field.type, "signed") == 1 || \
+      metaref_str_equals(field.type, "signed int") == 1)
+      
+#define METAREF_STRUCT_FIELD_IS_INT(struct_name, field_name)\
+    (METAREF_FIELD_IS_INT(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is unsigned int. 
@@ -923,14 +1010,16 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is unsigned int
 */
-#define METAREF_FIELD_IS_UINT(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "unsigned") == 1 || \
-     metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "unsigned int") == 1)
+#define METAREF_FIELD_IS_UINT(field)\
+    (metaref_str_equals(field.type, "unsigned") == 1 || \
+     metaref_str_equals(field.type, "unsigned int") == 1)
+     
+#define METAREF_STRUCT_FIELD_IS_UINT(struct_name, field_name)\
+    (METAREF_FIELD_IS_UINT(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is short. 
@@ -953,16 +1042,18 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is short
 */
-#define METAREF_FIELD_IS_SHORT(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "short") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "short int") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "signed short") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "signed short int") == 1)
+#define METAREF_FIELD_IS_SHORT(field)\
+    (metaref_str_equals(field.type, "short") == 1 || \
+      metaref_str_equals(field.type, "short int") == 1 || \
+      metaref_str_equals(field.type, "signed short") == 1 || \
+      metaref_str_equals(field.type, "signed short int") == 1)
+      
+#define METAREF_STRUCT_FIELD_IS_SHORT(struct_name, field_name)\
+    (METAREF_FIELD_IS_SHORT(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is unsigned short. 
@@ -983,14 +1074,16 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is unsigned short
 */
-#define METAREF_FIELD_IS_USHORT(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "unsigned short") == 1 || \
-     metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "unsigned short int") == 1)
+#define METAREF_FIELD_IS_USHORT(field)\
+    (metaref_str_equals(field.type, "unsigned short") == 1 || \
+     metaref_str_equals(field.type, "unsigned short int") == 1)
+     
+#define METAREF_STRUCT_FIELD_IS_USHORT(struct_name, field_name)\
+    (METAREF_FIELD_IS_USHORT(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is long. 
@@ -1013,16 +1106,18 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is long
 */
-#define METAREF_FIELD_IS_LONG(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type,"long") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type,"long int") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type,"signed long") == 1 || \
-      metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type,"signed long int") == 1)
+#define METAREF_FIELD_IS_LONG(field)\
+    (metaref_str_equals(field.type,"long") == 1 || \
+      metaref_str_equals(field.type,"long int") == 1 || \
+      metaref_str_equals(field.type,"signed long") == 1 || \
+      metaref_str_equals(field.type,"signed long int") == 1)
+      
+#define METAREF_STRUCT_FIELD_IS_LONG(struct_name, field_name)\
+    (METAREF_FIELD_IS_LONG(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is unsigned long. 
@@ -1043,14 +1138,16 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is unsigned long
 */
-#define METAREF_FIELD_IS_ULONG(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "unsigned long") == 1 || \
-     metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type, "unsigned long int") == 1)
+#define METAREF_FIELD_IS_ULONG(field)\
+    (metaref_str_equals(field.type, "unsigned long") == 1 || \
+     metaref_str_equals(field.type, "unsigned long int") == 1)
+     
+#define METAREF_STRUCT_FIELD_IS_ULONG(struct_name, field_name)\
+    (METAREF_FIELD_IS_ULONG(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is float. 
@@ -1070,13 +1167,15 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is float
 */
-#define METAREF_FIELD_IS_FLOAT(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type,"float") == 1)
+#define METAREF_FIELD_IS_FLOAT(field)\
+    (metaref_str_equals(field.type,"float") == 1)
+    
+#define METAREF_STRUCT_FIELD_IS_FLOAT(struct_name, field_name)\
+    (METAREF_FIELD_IS_FLOAT(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Check whether a field is double. 
@@ -1096,13 +1195,15 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is double
 */
-#define METAREF_FIELD_IS_DOUBLE(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type,"double") == 1)
+#define METAREF_FIELD_IS_DOUBLE(field)\
+    (metaref_str_equals(field.type,"double") == 1)
+    
+#define METAREF_STRUCT_FIELD_IS_DOUBLE(struct_name, field_name)\
+    (METAREF_FIELD_IS_DOUBLE(METAREF_GET_STRUCT_FIELD(struct_name, field_name)) == 1)
     
 /**
     Check whether a field is long double. 
@@ -1122,13 +1223,15 @@ extern "C" {
     should be declared and check for possible matching 
     types.
     
-    \param struct_name the struct name (not variable name)
-    \param field the field variable to use in the loop
+    \param field the field variable to check it type
     
     \return true if the field is long doubel
 */
-#define METAREF_FIELD_IS_LONG_DOUBLE(struct_name, field_name)\
-    (metaref_str_equals(METAREF_GET_STRUCT_FIELD(struct_name, field_name).type,"long double") == 1)
+#define METAREF_FIELD_IS_LONG_DOUBLE(field)\
+    (metaref_str_equals(field.type,"long double") == 1)
+    
+#define METAREF_STRUCT_FIELD_IS_LONG_DOUBLE(struct_name, field_name)\
+    (METAREF_FIELD_IS_LONG_DOUBLE(METAREF_GET_STRUCT_FIELD(struct_name, field_name)))
     
 /**
     Get all field annotations
@@ -1281,12 +1384,59 @@ extern "C" {
     returned field. Check if the field is valid first by checking 
     if it type does not equal NULL
     
-    \param struct_name the struct name (not variable name)
-    \param obj the struct object
+    \param the_meta_struct the struct object
     \param field_name the identifier of a field
 */
-#define METAREF_GET_FIELD(struct_name, obj, field_name)\
-    METAREF_##struct_name##_get_field(obj, field_name)
+#define METAREF_GET_FIELD(the_meta_struct, field_name)\
+    metaref_struct_get_field(the_meta_struct, field_name)
+    
+/**
+    Iterate through all the struct fields, the field value in 
+    the iteration has the ptr_address value set. 
+    
+    Use this loop to get a struct field with it value
+    
+    \param struct_name the struct name (not variable name)
+    \param obj the struct object
+    \param field the field variable to use in the loop
+    \param body the for loop body
+*/
+#define FOREACH_FIELD(struct_name, obj, field, body)\
+    for(size_t i = 0; the_struct->fields_array[i].type != NULL; ++i) {\
+        Field field = the_struct->fields_array[i];    \
+        body   \
+    }
+    
+/**
+    Iterate through all the struct fields, the field value in 
+    the iteration has the ptr_address value set. 
+    
+    Use this loop to get a struct field with it value
+    
+    \param struct_name the struct name (not variable name)
+    \param obj the struct object
+    \param index the index of the field in the array
+    \param field the field variable to use in the loop
+    \param body the for loop body
+*/
+#define FOREACH_FIELD_INDEX(the_struct, index, field, body)\
+    for(size_t i = 0; the_struct->fields_array[i].type != NULL; ++i) {\
+        size_t index = i; \
+        Field field = the_struct->fields_array[index];    \
+        body   \
+    }
+
+/**
+    Check if the value of a field is NULL.
+    
+    This is useful to validate the value of a field 
+    before modifying it values to prevent undefined 
+    behaviours.
+
+    \field the Field object with a valid ptr_address
+*/
+#define METAREF_FIELD_VALUE_IS_NULL(field)\
+    (field.ptr_address == NULL || *field.ptr_address == NULL)
 
 /**
     Uncast the pointer address of the field value, it returns 

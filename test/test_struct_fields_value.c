@@ -7,7 +7,7 @@
 #endif
 
 CESTER_BEFORE_ALL(inst,
-    Date *date = (Date *) malloc(sizeof(Date));
+    Date *date = (Date *) calloc(1, sizeof(Date));
     date->time = (char *) "01:44 AM";
     date->day = 5;
     inst->arg = date;
@@ -22,8 +22,9 @@ CESTER_TEST(check_date_struct_fields_values, inst,
 
 CESTER_TEST(check_date_struct_fields_values_introspection, inst,
     Date *date = (Date *) inst->arg;
-    Field time_field = METAREF_GET_FIELD(Date, date, "time");
-    Field day_field = METAREF_GET_FIELD(Date, date, "day");
+    Struct *date_struct = METAREF_GET_STRUCT(Date, date);
+    Field time_field = METAREF_GET_FIELD(date_struct, "time");
+    Field day_field = METAREF_GET_FIELD(date_struct, "day");
     
     cester_assert_ptr_equal(&(date->time), time_field.ptr_address);
     cester_assert_str_equal(date->time, (char*)(*time_field.ptr_address));
@@ -37,8 +38,9 @@ CESTER_TEST(check_date_struct_fields_values_introspection, inst,
 
 CESTER_TEST(check_date_struct_fields_values_introspection_macro, inst,
     Date *date = (Date *) inst->arg;
-    Field time_field = METAREF_GET_FIELD(Date, date, "time");
-    Field day_field = METAREF_GET_FIELD(Date, date, "day");
+    Struct *date_struct = METAREF_GET_STRUCT(Date, date);
+    Field time_field = METAREF_GET_FIELD(date_struct, "time");
+    Field day_field = METAREF_GET_FIELD(date_struct, "day");
     int day2 = *(METAREF_FIELD_VALUE_PTR_AS(int, day_field));
     char *time1 = (char*)METAREF_FIELD_VALUE_PTR(time_field);
     
@@ -66,8 +68,9 @@ CESTER_TEST(check_date_struct_fields_values_introspection_macro, inst,
 
 CESTER_TEST(check_date_struct_fields_values_intercession, inst,
     Date *date = (Date *) inst->arg;
-    Field time_field = METAREF_GET_FIELD(Date, date, "time");
-    Field day_field = METAREF_GET_FIELD(Date, date, "day");
+    Struct *date_struct = METAREF_GET_STRUCT(Date, date);
+    Field time_field = METAREF_GET_FIELD(date_struct, "time");
+    Field day_field = METAREF_GET_FIELD(date_struct, "day");
     
     *time_field.ptr_address = (char *) "02:30 PM";
     *day_field.ptr_address = (void*)20; // BAD
@@ -89,8 +92,9 @@ CESTER_TEST(check_date_struct_fields_values_after, inst,
 
 CESTER_TEST(check_date_struct_fields_values_intercession_macro, inst,
     Date *date = (Date *) inst->arg;
-    Field time_field = METAREF_GET_FIELD(Date, date, "time");
-    Field day_field = METAREF_GET_FIELD(Date, date, "day");
+    Struct *date_struct = METAREF_GET_STRUCT(Date, date);
+    Field time_field = METAREF_GET_FIELD(date_struct, "time");
+    Field day_field = METAREF_GET_FIELD(date_struct, "day");
     
     METAREF_SET_FIELD_VALUE(time_field, "01:44 AM");
     METAREF_SET_FIELD_VALUE(day_field, 5);

@@ -13,6 +13,15 @@ CESTER_TEST(iterate_all_struct_annotation, _,
     })
 )
 
+CESTER_TEST(iterate_all_struct_annotation_clean, _,
+    Struct *the_struct = METAREF_GET_STRUCT(User, NULL);
+    FOREACH_ANNOTATION(the_struct, annotation, {
+        cester_assert_ptr_not_equal(NULL, (void*)annotation.name);
+        cester_assert_str_not_equal(annotation.name, NULL);
+    })
+    METAREF_FREE_STRUCT(User);
+)
+
 CESTER_TEST(check_struct_string_annotation, _,        
     cester_assert_true(METAREF_STRUCT_HAS_ANNOTATION(User, "DATABASE_table"));
     cester_assert_ptr_not_equal((void*)METAREF_STRUCT_GET_ANNOTATION(User, "DATABASE_table").name, NULL);
