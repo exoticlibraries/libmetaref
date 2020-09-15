@@ -1320,6 +1320,8 @@ extern "C" {
 */
 #define METAREF_SET_FIELD_VALUE(field, value)\
     *field.ptr_address = (void*)value
+    
+#endif
 
 #define METAREF_PREPROCESSING_DONE
 #undef EXOTIC_METAREF_STRUCT
