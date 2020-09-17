@@ -1,8 +1,8 @@
 import themata
 
 project = 'libmetaref'
-copyright = '2020, Adewale Azeez, The Unlicense'
-author = 'Adewale Azeez'
+copyright = '2020, Exotic Libraries - MIT License'
+author = 'Exotic Libraries Contributors'
 
 html_theme_path = [themata.get_html_theme_path()]
 html_theme = 'fandango'
@@ -25,7 +25,7 @@ html_theme_options = {
         ('Reference', 'reference/index'),
         ('Github', 'https://github.com/exoticlibraries/libmetaref/'),
         ('Exotic Libraries', 'https://exoticlibraries.github.io/'),
-        ('Support', 'https://exoticlibraries.github.io/support.html')
+        ('Support', 'https://exoticlibraries.github.io/pages/support.html')
     ],
     'has_right_sidebar': True,
     'show_navigators': True,
