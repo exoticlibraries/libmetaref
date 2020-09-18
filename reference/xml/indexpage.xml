@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>libmetaref</title>
+    <detaileddescription>
+<para>Extends struct for reflection and runtime analysis. Allows (string like) annotation for struct fields.</para><para><heading level="1">Why?</heading>
+</para><para>Well I want a situation whereby I can assign the values of struct fields without the need to know what field is declared or not. For example to deserialize a json object into a struct in the traditional manner I will be aware of the JSON object structure and the struct fields so I iterate the JSON object and assign match with the struct fields, this requires me to know both the JSON structure and the struct fields, but with this library there is no need to be aware of either of the two a json library that support libmetaref can just simply take your JSON object, struct and assign where appropriate and possibly set non matching field to NULL.</para><para>An example is described below.</para><para><emphasis>location.json</emphasis></para><para><programlisting><codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&quot;longitude&quot;:<sp/>123.45,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&quot;latitude&quot;:<sp/>678.90</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para><para>The Location struct file:</para><para><emphasis>location_struct.h</emphasis></para><para><programlisting><codeline><highlight class="preprocessor">#define<sp/>__STRUCT_FILE__<sp/>&quot;location_struct.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="metaref_8h" kindref="compound">exotic/metaref.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">STRUCT(Location,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FIELD(</highlight><highlight class="keywordtype">long</highlight><highlight class="normal">,<sp/>longitude)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FIELD(</highlight><highlight class="keywordtype">long</highlight><highlight class="normal">,<sp/>latitude)</highlight></codeline>
+<codeline><highlight class="normal">)</highlight></codeline>
+</programlisting></para><para>Assume a JSON library that add support for libmetaref</para><para><emphasis>json_to_struct.c</emphasis> <programlisting><codeline><highlight class="preprocessor">#include<sp/>&quot;location_struct.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;exotic/xson.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdio.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>xson_object*<sp/>json;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Location<sp/>*location<sp/>=<sp/>malloc(</highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(Location));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(xson_obj_from_file(&amp;json,<sp/></highlight><highlight class="stringliteral">&quot;location.json&quot;</highlight><highlight class="normal">)<sp/>!=<sp/>XSON_OK<sp/>||<sp/></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>xson_deserialize(json,<sp/>location)<sp/>!=<sp/>XSON_OK)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Longitude<sp/>%.3f&quot;</highlight><highlight class="normal">,<sp/>location-&gt;longitude);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Latitude<sp/>%.3f&quot;</highlight><highlight class="normal">,<sp/>location-&gt;latitude);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para><para>In the example above the json library handles the struct field assignment, the json values validation. The example above is a pseudocode it not expected to compile.</para><para><heading level="1">Note</heading>
+</para><para>Must initialize the struct with calloc to enable all the field values are NULL</para><para><heading level="2">Limitations and Safety</heading>
+</para><para>Compile time check still happens</para><para>It cannot auto detect type of field, esp struct</para><para><heading level="1">Best practice</heading>
+</para><para>Functions expecting struct created with metaref should have the <computeroutput>_metaref</computeroutput> prefix. E.g.</para><para>A function that accept struct not defined with metaref</para><para><programlisting><codeline><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/>struct_to_string(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">*);</highlight></codeline>
+</programlisting></para><para>A function that accept struct defined with metaref</para><para><programlisting><codeline><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/>struct_to_string_metaref(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">*);</highlight></codeline>
+</programlisting> </para>    </detaileddescription>
+  </compounddef>
+</doxygen>

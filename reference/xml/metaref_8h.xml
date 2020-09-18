@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.13">
+  <compounddef id="metaref_8h" kind="file" language="C++">
+    <compoundname>metaref.h</compoundname>
+    <includes local="no">metaref_not_supported_with_no___COUNTER__</includes>
+    <incdepgraph>
+      <node id="1">
+        <label>metaref_not_supported_with_no___COUNTER__</label>
+      </node>
+      <node id="0">
+        <label>/home/runner/work/libmetaref/libmetaref/include/exotic/metaref.h</label>
+        <link refid="metaref_8h"/>
+        <childnode refid="1" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="copyright"><para>MIT License Copyright (c) 2020, Adewale Azeez </para></simplesect>
+<simplesect kind="author"><para>Adewale Azeez <ulink url="mailto:azeezadewale98@gmail.com">azeezadewale98@gmail.com</ulink> </para></simplesect>
+<simplesect kind="date"><para>27 June 2020 </para></simplesect>
+</para>    </detaileddescription>
+    <location file="/home/runner/work/libmetaref/libmetaref/include/exotic/metaref.h"/>
+  </compounddef>
+</doxygen>
