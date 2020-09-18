@@ -55,6 +55,7 @@ jobs:
       - name: Install and Build 🔧
         run: |
           sudo apt-get install -y python3 python3-setuptools python3-pip python3-sphinx
+          sudo apt-get install -y clang doxygen make
           pip3 install themata
           cd ./docs/
           bash ./make.sh
