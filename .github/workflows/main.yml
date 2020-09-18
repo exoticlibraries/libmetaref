@@ -59,7 +59,7 @@ jobs:
           python -m pip install themata
           sudo apt-get install -y clang doxygen make
           cd ./docs/
-          bash ./make.sh
+          sudo bash ./make.sh
           cd ../
 
       - name: Deploy 🚀
