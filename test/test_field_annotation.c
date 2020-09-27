@@ -27,7 +27,7 @@ CESTER_TEST(iterate_annotations_raw, _,
     for(i = 0; google_map_link_field.annotations[i].line_num != 0; ++i) {
         if (google_map_link_field.annotations[i].type == METAREF_ANNOTATION_FUNCTION) {
             cester_assert_str_not_equal(google_map_link_field.annotations[i].name, 
-                                        (char *)google_map_link_field.annotations[i].func_ptr(NULL));
+                                        (char *)google_map_link_field.annotations[i].func_ptr(NULL, NULL));
         }
     }
     
@@ -54,7 +54,7 @@ CESTER_TEST(iterate_annotations_macro_helper, _,
     })
     
     Field field3 = METAREF_GET_STRUCT_FIELD(Preference, "fullname");
-    FOREACH_FIELD_ANNOTATION(field3, annotation, {
+    FOREACH_FIELD_ANNOTATION_INDEX(field3, index, annotation, {
         cester_assert_str_not_equal(annotation.name, "");
     })
 )

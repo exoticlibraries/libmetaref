@@ -3,13 +3,12 @@ name: CI-CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  build:
-    if: github.event_name == 'kjkpush' && contains(github.ref, 'refs/tags/')
+  execute-regression:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -44,8 +43,8 @@ jobs:
             
   build-and-deploy-gh_pages:
     runs-on: ubuntu-latest
-    #needs: build
-    #if: github.event_name == 'push' #&& contains(github.ref, 'refs/for/main')
+    needs: execute-regression
+    if: github.event_name == 'push' && contains(github.ref, 'refs/heads/main')
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2.3.1
@@ -66,7 +65,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@3.6.1
         with:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_CI_CD }}
-          BRANCH: gh-pages # The branch the action should deploy to.
+          BRANCH: gh-pages 
           FOLDER: docs/build/html
           CLEAN: true
             

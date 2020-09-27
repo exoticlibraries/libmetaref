@@ -1,8 +1,8 @@
 
 .. index::
-	single: documentation_index
+	single: examples
 
-Documentation
+Examples
 ==============
 
 .. toctree::

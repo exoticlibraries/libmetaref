@@ -16,3 +16,5 @@ SEARCH_INCLUDES        = YES
 INHERIT_DOCS           = YES
 MARKDOWN_SUPPORT       = YES
 RECURSIVE              = YES
+PREDEFINED             = "__STRUCT_FILE__=Docygen.h" \
+                         "__STRUCT_NAME__=Docygen"

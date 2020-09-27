@@ -2,7 +2,7 @@ import themata
 
 project = 'libmetaref'
 copyright = '2020, Exotic Libraries - MIT License'
-author = 'Exotic Libraries Contributors'
+author = 'Adewale Azeez and Other Contributors'
 
 html_theme_path = [themata.get_html_theme_path()]
 html_theme = 'fandango'
@@ -23,7 +23,7 @@ html_theme_options = {
     'navbar_links': [
         ('Doc', 'doc/index'),
         ('Reference', 'reference/index'),
-        ('Github', 'https://github.com/exoticlibraries/libmetaref/'),
+        ('Contribute', 'https://github.com/exoticlibraries/libmetaref/'),
         ('Exotic Libraries', 'https://exoticlibraries.github.io/'),
         ('Support', 'https://exoticlibraries.github.io/pages/support.html')
     ],
@@ -34,7 +34,7 @@ html_theme_options = {
         ('fab fa-twitter', 'https://twitter.com/exoticlibs'),
         ('fab fa-github', 'https://github.com/exoticlibraries/libmetaref/')
     ],
-    "source_root": "https://github.com/exoticlibraries/libmetaref/edit/main/",
+    "source_root": "https://github.com/exoticlibraries/libmetaref/edit/main/docs/",
     "document_font_size": "15px",
     'text_color': '#292929',
     'header_background_color': '#292929',
