@@ -79,8 +79,8 @@ CESTER_TEST(check_field_function_annotation, _,
     cester_assert_ptr_not_equal((void*)METAREF_FIELD_GET_ANNOTATION(field, "URL_prefix").name, NULL);
     cester_assert_false(METAREF_FIELD_ANNOTATION_IS_STRING(field, "URL_prefix"));
     cester_assert_true(METAREF_FIELD_ANNOTATION_IS_FUNCTION(field, "URL_prefix"));
-    cester_assert_str_not_equal((char *) METAREF_FIELD_ANNOTATION_FUNC_VALUE(field, "URL_prefix")(NULL), NULL);
-    cester_assert_str_equal((char *) METAREF_FIELD_ANNOTATION_FUNC_VALUE(field, "URL_prefix")(NULL), "https://www.google.ng/maps/place/");
+    cester_assert_str_not_equal((char *) METAREF_FIELD_ANNOTATION_FUNC_VALUE(field, "URL_prefix")(NULL, NULL), NULL);
+    cester_assert_str_equal((char *) METAREF_FIELD_ANNOTATION_FUNC_VALUE(field, "URL_prefix")(NULL, NULL), "https://www.google.ng/maps/place/");
 )
 
 CESTER_OPTIONS(
