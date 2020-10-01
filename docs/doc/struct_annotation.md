@@ -5,7 +5,7 @@
 libmetaref provides various macros to add annotation to a struct. Each struct annotation macro accept different types.
 
 - [_S](./macros.html#s)
-- [_i](./macros.html#i)
+- [_I](./macros.html#i)
 - [_l](./macros.html#l)
 - [_F](./macros.html#f)
 
@@ -30,6 +30,8 @@ The line_num is the line number where the annotation is declared, the type is th
 - METAREF_ANNOTATION_LONG,
 - METAREF_ANNOTATION_FUNCTION,
 - METAREF_ANNOTATION_TERMINATOR
+
+The name is the identifier of the annotation, str_value is the value of the annotation if defined with _S macro, the int_value i sthe value if defined with _I, long_value when defined with the macro _L and func_ptr is the value if the annotation is a function type.
 
 ## Creating annotations
 

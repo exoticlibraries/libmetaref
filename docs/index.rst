@@ -29,15 +29,6 @@
 
    /how_it_works/*
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :glob:
-   :caption: Examples
-   :name: main-examples
-
-   /examples/*
-
 
 .. mdinclude:: index_dump.md
 

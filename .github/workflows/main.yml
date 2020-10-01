@@ -3,7 +3,7 @@ name: CI-CD
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -36,6 +36,8 @@ jobs:
           test-exclude-file-pattern: |
             mock+
             crash_test.c
+          test-exclude-file-pattern-windows: |
+            test_struct_fields_types_clean+
           compiler-options-for-tests: |
             -I.
             -I./test/structs
