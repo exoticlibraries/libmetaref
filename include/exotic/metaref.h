@@ -15,6 +15,16 @@
     #include <metaref_not_supported_with_no___COUNTER__>
 #endif
 
+/**
+    Concatenate two objects implicitly
+*/
+#define METAREF_CONCAT_IMPL(x,y ) x##y
+
+/**
+    Concatenate two objects
+*/
+#define METAREF_CONCAT(x,y) METAREF_CONCAT_IMPL(x,y)
+
 #ifndef EXOTIC_METAREF_STRUCT
 #ifdef __STRUCT_FILE__
 #ifndef __STRUCT_NAME__
@@ -52,16 +62,6 @@ extern "C" {
 #define METAREF_STRUCTS_DECLARED
 
 #include <stdlib.h>
-
-/**
-    Concatenate two objects implicitly
-*/
-#define METAREF_CONCAT_IMPL(x,y ) x##y
-
-/**
-    Concatenate two objects
-*/
-#define METAREF_CONCAT(x,y) METAREF_CONCAT_IMPL(x,y)
 
 /**
     The function pointer for the annotation with a 
