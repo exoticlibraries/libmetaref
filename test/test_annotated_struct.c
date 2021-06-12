@@ -14,8 +14,8 @@ CESTER_TEST(iterate_all_struct_annotation, _,
 )
 
 CESTER_TEST(iterate_all_struct_annotation_clean, _,
-    Struct *the_struct = METAREF_GET_STRUCT(User, NULL);
-    FOREACH_ANNOTATION(the_struct, annotation, {
+    Struct *user_struct = METAREF_GET_STRUCT(User, NULL);
+    FOREACH_ANNOTATION(user_struct, annotation, {
         cester_assert_ptr_not_equal(NULL, (void*)annotation.name);
         cester_assert_str_not_equal(annotation.name, NULL);
     })
@@ -45,7 +45,7 @@ CESTER_TEST(check_struct_function_annotation, _,
     cester_assert_ptr_not_equal((void*)METAREF_STRUCT_GET_ANNOTATION(User, "TO_STRING").name, NULL);
     cester_assert_false(METAREF_STRUCT_ANNOTATION_IS_STRING(User, "TO_STRING"));
     cester_assert_true(METAREF_STRUCT_ANNOTATION_IS_FUNCTION(User, "TO_STRING"));
-    char *user_str = (char *) METAREF_STRUCT_ANNOTATION_FUNC_VALUE(User, "TO_STRING")(NULL);
+    char *user_str = (char *) METAREF_STRUCT_ANNOTATION_FUNC_VALUE(User, "TO_STRING")(NULL, NULL);
     cester_assert_str_not_equal(user_str, "user");
     cester_assert_str_equal(user_str, "Name=libmetaref");
 )

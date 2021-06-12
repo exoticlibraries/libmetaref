@@ -66,3 +66,40 @@
 .bodywrapper {
     min-height: 80vh;
 }
+
+.width-45-percent {
+    width: 45%;
+}
+
+.width-55-percent {
+    width: 55%;
+}
+
+.width-50-percent {
+    width: 50%;
+}
+
+.two-sided {
+    display: flex;
+}
+
+.two-sided .left-side {
+    padding-right: 2%;
+    padding-left: 0;
+}
+
+.two-sided .title {
+    font-weight: bold;
+}
+
+.two-sided pre {
+    overflow-y: scroll;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.doc-sphinx-info a {
+    color: #5682d1 !important;
+}

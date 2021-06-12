@@ -1,8 +1,8 @@
 
 .. index::
-	single: documentation_index
+	single: how_it_works
 
-Documentation
+How it works
 ==============
 
 .. toctree::

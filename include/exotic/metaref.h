@@ -15,6 +15,16 @@
     #include <metaref_not_supported_with_no___COUNTER__>
 #endif
 
+/**
+    Concatenate two objects implicitly
+*/
+#define METAREF_CONCAT_IMPL(x,y ) x##y
+
+/**
+    Concatenate two objects
+*/
+#define METAREF_CONCAT(x,y) METAREF_CONCAT_IMPL(x,y)
+
 #ifndef EXOTIC_METAREF_STRUCT
 #ifdef __STRUCT_FILE__
 #ifndef __STRUCT_NAME__
@@ -51,22 +61,14 @@ extern "C" {
 #ifndef METAREF_STRUCTS_DECLARED
 #define METAREF_STRUCTS_DECLARED
 
-/**
-    Concatenate two objects implicitly
-*/
-#define METAREF_CONCAT_IMPL(x,y ) x##y
-
-/**
-    Concatenate two objects
-*/
-#define METAREF_CONCAT(x,y) METAREF_CONCAT_IMPL(x,y)
+#include <stdlib.h>
 
 /**
     The function pointer for the annotation with a 
     function value instead of string. The function 
     accept a void* parameter and returns void*.
 */
-typedef void *(*func_ptr_)(const void *);
+typedef void *(*func_ptr_)(const void *, void *);
 
 typedef enum metaref_annotation_type_ {
     METAREF_ANNOTATION_STRING,
@@ -601,6 +603,12 @@ extern "C" {
 #define METAREF_GET_NAME(struct_name) METAREF_##struct_name
 
 /**
+    Get the Struct object for a struct, if it null that 
+    means it has not been initialized of it has been freed.
+*/
+#define METAREF_GET_OBJECT(struct_name) METAREF_##struct_name##_Struct
+
+/**
     Initialize the `Struct *` object of the struct, calling 
     this more than once will only return the same value as 
     the object holds the structure and not value of the 
@@ -775,19 +783,6 @@ extern "C" {
     }
     
 /**
-    Iterate through all the struct annotations
-    
-    \param the_struct the struct object 
-    \param annotation the annotation object (string)
-    \param body the for loop body
-*/
-#define FOREACH_ANNOTATION(the_struct, annotation, body)\
-    for(size_t i = 0; the_struct->annotations_array[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
-        Annotation annotation = the_struct->annotations_array[i];    \
-        body   \
-    }
-    
-/**
     Iterate through all the struct annotation
     
     \param struct_name the struct name (not variable name)
@@ -799,6 +794,19 @@ extern "C" {
     for(size_t i = 0; METAREF_##struct_name##_annotations[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
         size_t index = i;\
         Annotation annotation = METAREF_##struct_name##_annotations[index];    \
+        body   \
+    }
+    
+/**
+    Iterate through all the struct annotations
+    
+    \param the_struct the struct object 
+    \param annotation the annotation object (string)
+    \param body the for loop body
+*/
+#define FOREACH_ANNOTATION(the_struct, annotation, body)\
+    for(size_t i = 0; the_struct->annotations_array[i].type != METAREF_ANNOTATION_TERMINATOR; ++i) {\
+        Annotation annotation = the_struct->annotations_array[i];    \
         body   \
     }
     
@@ -1098,7 +1106,7 @@ extern "C" {
     following values 
     
     - long
-    - short int
+    - long int
     - signed long
     - signed long int
     
@@ -1243,7 +1251,6 @@ extern "C" {
 /**
     Iterate through all the field annotations
     
-    \param struct_name the struct name (not variable name)
     \param field the field object to get it annotations
     \param annotation the active annotation value
     \param body the for loop body
@@ -1251,6 +1258,21 @@ extern "C" {
 #define FOREACH_FIELD_ANNOTATION(field, annotation, body)\
     for(size_t mr_i_ = 0; field.annotations[mr_i_].line_num != 0; ++mr_i_) {\
         Annotation annotation = field.annotations[mr_i_];    \
+        body   \
+    }
+    
+/**
+    Iterate through all the field annotations
+    
+    \param field the field object to get it annotations
+    \param index the index of the current annotation
+    \param annotation the active annotation value
+    \param body the for loop body
+*/
+#define FOREACH_FIELD_ANNOTATION_INDEX(field, index, annotation, body)\
+    for(size_t mr_i_ = 0; field.annotations[mr_i_].line_num != 0; ++mr_i_) {\
+        size_t index = mr_i_;\
+        Annotation annotation = field.annotations[index];    \
         body   \
     }
     
@@ -1396,12 +1418,11 @@ extern "C" {
     
     Use this loop to get a struct field with it value
     
-    \param struct_name the struct name (not variable name)
-    \param obj the struct object
+    \param the_struct the struct variable
     \param field the field variable to use in the loop
     \param body the for loop body
 */
-#define FOREACH_FIELD(struct_name, obj, field, body)\
+#define FOREACH_FIELD(the_struct, field, body)\
     for(size_t i = 0; the_struct->fields_array[i].type != NULL; ++i) {\
         Field field = the_struct->fields_array[i];    \
         body   \
@@ -1413,8 +1434,7 @@ extern "C" {
     
     Use this loop to get a struct field with it value
     
-    \param struct_name the struct name (not variable name)
-    \param obj the struct object
+    \param the_struct the struct variable
     \param index the index of the field in the array
     \param field the field variable to use in the loop
     \param body the for loop body

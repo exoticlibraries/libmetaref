@@ -30,7 +30,7 @@ STRUCT(Preference,
 
 #ifndef PREFERENCE_STRUCT_FUNCTION
 #define PREFERENCE_STRUCT_FUNCTION
-void *get_map_prefix(const void *arg) {
+void *get_map_prefix(const void *the_struct, void *arg) {
     return (void *)"https://www.google.ng/maps/place/";
 }
 #endif

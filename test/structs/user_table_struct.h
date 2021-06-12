@@ -16,7 +16,7 @@ STRUCT(User,
 
 #ifndef USER_ANNOTATION_FUNCTION
 #define USER_ANNOTATION_FUNCTION
-void *user_to_string(const void *user) {
+void *user_to_string(const void *user, void *arg) {
     return (void *)"Name=libmetaref";
 }
 #endif
