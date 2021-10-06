@@ -1,4 +1,4 @@
-/*!gcc {0} -I../../libcester/include/ -I. -I./structs -I../include/ -o out.exe; ./out.exe --cester-verbose --cester-minimal */
+/*!gcc {0} -I../../libcester/include/ -I. -I./structs -I../../include/ -o out.exe; ./out.exe --cester-verbose --cester-minimal */
 
 #include <exotic/cester.h>
 #ifndef INCLUDE_STRUCTS
@@ -40,7 +40,7 @@ CESTER_TEST(check_struct_long_annotation, _,
     cester_assert_long_eq(METAREF_STRUCT_ANNOTATION_INT_VALUE(User, "SIZE_min"), 10);
 )
 
-CESTER_TEST(check_struct_function_annotation, _,        
+CESTER_TEST(check_struct_function_annotation, _,
     cester_assert_true(METAREF_STRUCT_HAS_ANNOTATION(User, "TO_STRING"));
     cester_assert_ptr_not_equal((void*)METAREF_STRUCT_GET_ANNOTATION(User, "TO_STRING").name, NULL);
     cester_assert_false(METAREF_STRUCT_ANNOTATION_IS_STRING(User, "TO_STRING"));

@@ -1,4 +1,4 @@
-/*!gcc {0} -I../../libcester/include/ -I. -I./structs -I../include/ -o out.exe; ./out.exe */
+/*!gcc {0} -I../../libcester/include/ -I. -I./structs -I../../include/ -o out.exe; ./out.exe */
 
 #include <exotic/cester.h>
 #include <ctype.h>

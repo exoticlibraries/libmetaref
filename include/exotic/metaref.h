@@ -15,6 +15,141 @@
     #include <metaref_not_supported_with_no___COUNTER__>
 #endif
 
+#ifndef EXOTIC_METAREF
+#define EXOTIC_METAREF
+
+/* Globals */
+
+/**
+    Concatenate two objects implicitly
+
+	\param x the first token to concat with y
+	\param y the second token to concat with x
+*/
+#define METAREF_CONCAT_IMPL(x,y ) x##y
+
+/**
+    Concatenate two objects
+
+	\param x the first token to concat with y
+	\param y the second token to concat with x
+*/
+#define METAREF_CONCAT(x,y) METAREF_CONCAT_IMPL(x,y)
+
+/**
+    Double two tokens by concating the token with itself
+
+	\param token the token to double
+*/
+#define METAREF_DOUBLE_TOKEN(token) METAREF_CONCAT_IMPL(token,token)
+
+/**
+    Duplicate the parameter that is passed, e.g.
+	`METAREF_DUPLICATE_VALUE(unsigned)` expands 
+	to `unsigned unsigned`
+
+	\param value the value to duplicate
+*/
+#define METAREF_DUPLICATE_VALUE(value) value value
+
+/**
+    Dupplicate the parameter that is passed with a delimeter 
+	e.g. `METAREF_DUPLICATE_VALUE_WITH_DELIMITER(unsigned, :)` 
+	expands to `unsigned: unsigned`
+
+	\param value the value to duplicate
+	\param delimiter the delimiter to sperate the duplicate values
+*/
+#define METAREF_DUPLICATE_VALUE_WITH_DELIMITER(value, delimiter) value delimiter value
+
+/**
+    Convert a token to a string literal
+	e.g. `METAREF_VALUE_TO_STR(unsigned)` 
+	expands to `"unsigned"`
+
+	\param token the token to convert to string literal
+*/
+#define METAREF_VALUE_TO_STR(token) #token
+
+/**
+    Convert a token to a string literal, seperated by 
+	the specified delimiter.
+	e.g. `METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(unsigned, :)` 
+	expands to `unsigned : "unsigned"`
+
+	\param token the token to convert to concat
+*/
+#define METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(token, delimeter) token delimeter METAREF_VALUE_TO_STR(token)
+
+/**
+    Get the type of a variable, uses the C11 _Generic 
+	expression to determine the variable type.
+
+	The following types are currently recognized.
+	- short
+	- unsigned short
+	- int
+	- unsigned int
+	- long int
+	- unsigned long int
+	- long long int
+	- unsigned long long int
+	- char
+	- signed char
+	- unsigned char
+	- float
+	- double
+	- long double
+
+	\param value the variable to get it type
+*/
+#define METAREF_GENERIC_TYPE_STR(value) _Generic(value,                     \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(short, :),                  \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(unsigned short, :),         \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(int, :),                    \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(unsigned int, :),           \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(long int, :),               \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(unsigned long int, :),      \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(long long int, :),          \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(unsigned long long int, :), \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(char, :),                   \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(signed char, :),            \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(unsigned char, :),          \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(float, :),                  \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(double, :),                 \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(long double, :),            \
+		METAREF_VALUE_CONCAT_STR_WITH_DELIMITER(char *, :),                 \
+		default: "void *"                                                   \
+	)
+
+/**
+    Get the format specifier of a variable according 
+	to type, uses the C11 _Generic expression to 
+	determine the variable type.
+
+	\param value the variable to get it format specifier
+*/
+#define METAREF_FORMAT_SPECIFIER(value) _Generic(value,  \
+		short: "%hd",                                    \
+		unsigned short: "%hu",                           \
+		int: "%d",                                       \
+		unsigned int: "%u",                              \
+		long int: "%ld",                                 \
+		unsigned long int: "%lu",                        \
+		long long int: "%lld",                           \
+		unsigned long long int: "%llu",                  \
+		char: "%c",                                      \
+		signed char: "%c",                               \
+		unsigned char: "%c",                             \
+		float: "%f",                                     \
+		double: "%lf",                                   \
+		long double: "%Lf",                              \
+		char *: "%s",                                    \
+		default: "%p"                                    \
+	)
+
+#endif
+
 #ifndef EXOTIC_METAREF_STRUCT
 #ifdef __STRUCT_FILE__
 #ifndef __STRUCT_NAME__
@@ -50,16 +185,6 @@ extern "C" {
 
 #ifndef METAREF_STRUCTS_DECLARED
 #define METAREF_STRUCTS_DECLARED
-
-/**
-    Concatenate two objects implicitly
-*/
-#define METAREF_CONCAT_IMPL(x,y ) x##y
-
-/**
-    Concatenate two objects
-*/
-#define METAREF_CONCAT(x,y) METAREF_CONCAT_IMPL(x,y)
 
 /**
     The function pointer for the annotation with a 
