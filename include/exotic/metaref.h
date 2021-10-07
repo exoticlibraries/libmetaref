@@ -129,7 +129,7 @@
 
 	\param value the variable to get it format specifier
 */
-#define METAREF_FORMAT_SPECIFIER(value) _Generic(value,  \
+#define METAREF_GENERIC_FORMAT_SPECIFIER(value) _Generic(value,  \
 		short: "%hd",                                    \
 		unsigned short: "%hu",                           \
 		int: "%d",                                       \
